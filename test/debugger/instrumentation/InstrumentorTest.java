@@ -138,6 +138,10 @@ public class InstrumentorTest {
 				return 2;
 			}
 		}
+		
+		public int throwUncaughtException() {
+			throw new RuntimeException("Test Exception");
+		}
 	}
 	
 	@Before
@@ -382,6 +386,26 @@ public class InstrumentorTest {
 		new TestMethodsClass().throwException();
 		assertLog(Arrays.asList("CATCH:"), Arrays.asList(
 			"CATCH: java.lang.RuntimeException, Test Exception"
+		));
+	}
+	
+	@Test
+	public void exitWithException() {
+		try {
+			new TestMethodsClass().throwUncaughtException();
+		} catch(Exception e) {
+		}
+		assertLog(Arrays.asList("EXIT EXCEPTION:"), Arrays.asList(
+			"EXIT EXCEPTION: java.lang.RuntimeException, Test Exception"
+		));
+	}
+	
+	@Test
+	public void exitWithValue() {
+		new TestMethodsClass().simpleIntMethod();
+		assertLog(Arrays.asList("EXIT VALUE:"), Arrays.asList(
+			"EXIT VALUE: null",
+			"EXIT VALUE: 2"
 		));
 	}
 

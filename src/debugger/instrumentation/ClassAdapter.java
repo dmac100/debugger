@@ -16,6 +16,8 @@ public class ClassAdapter extends ClassVisitor {
 			return null;
 		}
 		
+		methodVisitor = new ExitMethodAdapter(methodVisitor, access, name, descriptor);
+		
 		methodVisitor = new MethodAdapter(access, name, descriptor, methodVisitor);
 		
 		return methodVisitor;

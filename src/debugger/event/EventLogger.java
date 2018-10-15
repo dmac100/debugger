@@ -89,4 +89,12 @@ public class EventLogger {
 	public static void catchException(Throwable t, int methodIndex) {
 		log("CATCH: " + t.getClass().getName() + ", " + t.getMessage());
 	}
+	
+	public static void exitWithException(Throwable t, int methodIndex) {
+		log("EXIT EXCEPTION: " + t.getClass().getName() + ", " + t.getMessage());
+	}
+	
+	public static void exitWithValue(Object value, int methodIndex) {
+		log("EXIT VALUE: " + value);
+	}
 }

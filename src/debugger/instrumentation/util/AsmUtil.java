@@ -168,4 +168,41 @@ public class AsmUtil {
 	public static String getAsmClassName(Class<?> clazz) {
 		return clazz.getCanonicalName().replace(".", "/");
 	}
+	
+	public static Type getOperandType(int opcode) {
+		switch(opcode) {
+		case Opcodes.ISTORE:
+			return Type.INT_TYPE;
+		case Opcodes.FSTORE:
+			return Type.FLOAT_TYPE;
+		case Opcodes.DSTORE:
+			return Type.DOUBLE_TYPE;
+		case Opcodes.LSTORE:
+			return Type.LONG_TYPE;
+		case Opcodes.ASTORE:
+			return Type.getType(Object.class);
+		case Opcodes.IRETURN:
+			return Type.INT_TYPE;
+		case Opcodes.LRETURN:
+			return Type.LONG_TYPE;
+		case Opcodes.FRETURN:
+			return Type.FLOAT_TYPE;
+		case Opcodes.DRETURN:
+			return Type.DOUBLE_TYPE;
+		case Opcodes.ARETURN:
+			return Type.getType(Object.class);
+		case Opcodes.IASTORE:
+			return Type.INT_TYPE;
+		case Opcodes.FASTORE:
+			return Type.FLOAT_TYPE;
+		case Opcodes.DASTORE:
+			return Type.DOUBLE_TYPE;
+		case Opcodes.LASTORE:
+			return Type.LONG_TYPE;
+		case Opcodes.AASTORE:
+			return Type.getType(Object.class);
+		default:
+			throw new IllegalArgumentException("Unknown opcode: " + opcode);
+		}
+	}
 }

@@ -26,11 +26,11 @@ public class MethodAdapter extends GeneratorAdapter {
 
 	@Override
 	public void visitCode() {
+		super.visitCode();
+		
 		methodIndexVar = newLocal(Type.INT_TYPE);
 		invokeEventLogger("nextMethodIndex", "()I");
 		storeLocal(methodIndexVar);
-
-		super.visitCode();
 	}
 
 	@Override
