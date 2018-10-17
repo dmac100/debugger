@@ -10,14 +10,17 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.AdviceAdapter;
 
 class FinallyMethodVisitor extends AdviceAdapter {
+	private final MethodExitHandler methodExitHandler;
+	
 	private boolean inOriginalMethod = false;
 	private Label exceptionEnd = null;
 	private Label exceptionHandler = new Label();
 	
 	private Set<Label> existingExceptionStartLabels = new HashSet<>();
 	
-	public FinallyMethodVisitor(MethodVisitor methodVisitor, int access, String name, String descriptor) {
+	public FinallyMethodVisitor(MethodVisitor methodVisitor, int access, String name, String descriptor, MethodExitHandler methodExitHandler) {
 		super(Opcodes.ASM7, methodVisitor, access, name, descriptor);
+		this.methodExitHandler = methodExitHandler;
 	}
 	
 	@Override
@@ -147,7 +150,15 @@ class FinallyMethodVisitor extends AdviceAdapter {
 		exceptionEnd = null;
 	}
 	
-	protected void onFinally() {}
-	protected void onReturn(int opcode) {}
-	protected void onThrow() {}
+	protected void onFinally() {
+		methodExitHandler.onFinally();
+	}
+	
+	protected void onReturn(int opcode) {
+		methodExitHandler.onReturn(opcode);
+	}
+	
+	protected void onThrow() {
+		methodExitHandler.onThrow();
+	}
 }

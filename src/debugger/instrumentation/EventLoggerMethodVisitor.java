@@ -14,12 +14,12 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import debugger.event.EventLogger;
 import debugger.instrumentation.util.AsmUtil;
 
-public class MethodAdapter extends GeneratorAdapter {
+public class EventLoggerMethodVisitor extends GeneratorAdapter implements MethodExitHandler {
 	private final AsmUtil asmUtil;
 	private final Set<Label> exceptionHandlers = new HashSet<>();
 	private int methodIndexVar = -1;
 
-	public MethodAdapter(int access, String name, String descriptor, MethodVisitor methodVisitor) {
+	public EventLoggerMethodVisitor(int access, String name, String descriptor, MethodVisitor methodVisitor) {
 		super(Opcodes.ASM7, methodVisitor, access, name, descriptor);
 		this.asmUtil = new AsmUtil(methodVisitor);
 	}
@@ -113,7 +113,7 @@ public class MethodAdapter extends GeneratorAdapter {
 		}
 
 		asmUtil.iconst(locals.size());
-		mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
+		visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
 
 		for(int i = 0; i < locals.size(); i++) {
 			dup();
@@ -121,7 +121,7 @@ public class MethodAdapter extends GeneratorAdapter {
 			Type type = argTypes[i];
 			loadLocal(locals.get(i));
 			box(type);
-			mv.visitInsn(Opcodes.AASTORE);
+			visitInsn(Opcodes.AASTORE);
 		}
 
 		return locals;
@@ -162,7 +162,7 @@ public class MethodAdapter extends GeneratorAdapter {
 			invokeEventLogger("returnValue", "(Ljava/lang/Object;I)V");
 			break;
 		case Opcodes.RETURN:
-			mv.visitInsn(Opcodes.ACONST_NULL);
+			visitInsn(Opcodes.ACONST_NULL);
 			loadLocal(methodIndexVar);
 			invokeEventLogger("returnValue", "(Ljava/lang/Object;I)V");
 			break;
@@ -292,5 +292,28 @@ public class MethodAdapter extends GeneratorAdapter {
 		default:
 			throw new IllegalArgumentException("Unknown opcode: " + opcode);
 		}
+	}
+
+	@Override
+	public void onReturn(int opcode) {
+		if(opcode == Opcodes.RETURN) {
+			super.visitInsn(Opcodes.ACONST_NULL);
+		} else {
+			if(AsmUtil.getOperandType(opcode).getSize() == 1) {
+				super.visitInsn(Opcodes.DUP);
+			} else {
+				super.visitInsn(Opcodes.DUP2);
+			}
+			box(AsmUtil.getOperandType(opcode));
+		}
+		loadLocal(methodIndexVar);
+		invokeEventLogger("exitWithValue", "(Ljava/lang/Object;I)V");
+	}
+
+	@Override
+	public void onThrow() {
+		super.visitInsn(Opcodes.DUP);
+		loadLocal(methodIndexVar);
+		invokeEventLogger("exitWithException", "(Ljava/lang/Throwable;I)V");
 	}
 }

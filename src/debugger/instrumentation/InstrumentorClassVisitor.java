@@ -4,8 +4,8 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-public class ClassAdapter extends ClassVisitor {
-	public ClassAdapter(ClassVisitor classVisitor) {
+public class InstrumentorClassVisitor extends ClassVisitor {
+	public InstrumentorClassVisitor(ClassVisitor classVisitor) {
 		super(Opcodes.ASM7, classVisitor);
 	}
 	
@@ -16,9 +16,10 @@ public class ClassAdapter extends ClassVisitor {
 			return null;
 		}
 		
-		methodVisitor = new ExitMethodAdapter(methodVisitor, access, name, descriptor);
+		EventLoggerMethodVisitor eventLoggerMethodVisitor = new EventLoggerMethodVisitor(access, name, descriptor, methodVisitor);
+		methodVisitor = eventLoggerMethodVisitor;
 		
-		methodVisitor = new MethodAdapter(access, name, descriptor, methodVisitor);
+		methodVisitor = new FinallyMethodVisitor(methodVisitor, access, name, descriptor, eventLoggerMethodVisitor);
 		
 		return methodVisitor;
 	}

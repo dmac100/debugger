@@ -32,7 +32,7 @@ public class Instrumentor {
 		}
 		
 		public ClassVisitor wrap(TypeDescription instrumentedType, ClassVisitor classVisitor, Context context, TypePool typePool, FieldList<InDefinedShape> fieldList, MethodList<?> methodList, int writerFlags, int readFlags) {
-			return new ClassAdapter(classVisitor);
+			return new InstrumentorClassVisitor(classVisitor);
 		}
 	}
 	
