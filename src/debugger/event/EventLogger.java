@@ -50,51 +50,51 @@ public class EventLogger {
 		return methodIndex++;
 	}
 
-	public static void putField(Object object, String name, Object value, int methodIndex) {
+	public static void putField(Object object, String name, Object value, Thread thread, int methodIndex) {
 		log("PUT FIELD: " + getObjectName(object) + ", " + name + ", " + value);
 	}
 
-	public static void store(int varIndex, Object value, int methodIndex) {
+	public static void store(int varIndex, Object value, Thread thread, int methodIndex) {
 		log("STORE: " + varIndex + ", " + value);
 	}
 	
-	public static void storeArray(Object array, int index, Object value, int methodIndex) {
+	public static void storeArray(Object array, int index, Object value, Thread thread, int methodIndex) {
 		log("STORE ARRAY: " + getObjectName(array) + ", " + index + ", " + value);
 	}
 
-	public static void invokeMethod(Object object, String name, String descriptor, Object[] args, int methodIndex) {
+	public static void invokeMethod(Object object, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
 		log("INVOKE: " + getObjectName(object) + ", " + name + ", " + descriptor + ", " + Arrays.toString(args));
 	}
 	
-	public static void invokeSpecialMethod(Object object, String name, String descriptor, Object[] args, int methodIndex) {
+	public static void invokeSpecialMethod(Object object, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
 		log("INVOKE SPECIAL: " + getObjectName(object) + ", " + name + ", " + descriptor + ", " + Arrays.toString(args));
 	}
 	
-	public static void invokeStaticMethod(String className, String name, String descriptor, Object[] args, int methodIndex) {
+	public static void invokeStaticMethod(String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
 		log("INVOKE STATIC: " + className + ", " + name + ", " + descriptor + ", " + Arrays.toString(args));
 	}
 	
-	public static void returnValue(Object value, int methodIndex) {
+	public static void returnValue(Object value, Thread thread, int methodIndex) {
 		log("RETURN: " + value);
 	}
 	
-	public static void returnedValue(Object value, int methodIndex) {
+	public static void returnedValue(Object value, Thread thread, int methodIndex) {
 		log("RETURNED: " + value);
 	}
 	
-	public static void throwException(Throwable t, int methodIndex) {
+	public static void throwException(Throwable t, Thread thread, int methodIndex) {
 		log("THROW: " + t.getClass().getName() + ", " + t.getMessage());
 	}
 	
-	public static void catchException(Throwable t, int methodIndex) {
+	public static void catchException(Throwable t, Thread thread, int methodIndex) {
 		log("CATCH: " + t.getClass().getName() + ", " + t.getMessage());
 	}
 	
-	public static void exitWithException(Throwable t, int methodIndex) {
+	public static void exitWithException(Throwable t, Thread thread, int methodIndex) {
 		log("EXIT EXCEPTION: " + t.getClass().getName() + ", " + t.getMessage());
 	}
 	
-	public static void exitWithValue(Object value, int methodIndex) {
+	public static void exitWithValue(Object value, Thread thread, int methodIndex) {
 		log("EXIT VALUE: " + value);
 	}
 }

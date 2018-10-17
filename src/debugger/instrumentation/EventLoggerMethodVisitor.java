@@ -71,14 +71,15 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		push(descriptor);
 		swap();
 
+		loadCurrentThread();
 		loadLocal(methodIndexVar);
 
 		if(isStatic) {
-			invokeEventLogger("invokeStaticMethod", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;I)V");
+			invokeEventLogger("invokeStaticMethod", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		} else if(isSpecial) {
-			invokeEventLogger("invokeSpecialMethod", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;I)V");
+			invokeEventLogger("invokeSpecialMethod", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		} else {
-			invokeEventLogger("invokeMethod", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;I)V");
+			invokeEventLogger("invokeMethod", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		}
 
 		for(int i = 0; i < locals.size(); i++) {
@@ -90,13 +91,15 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		Type returnType = Type.getReturnType(descriptor);
 		if(returnType == Type.VOID_TYPE) {
 			visitInsn(Opcodes.ACONST_NULL);
+			loadCurrentThread();
 			loadLocal(methodIndexVar);
 		} else {
 			asmUtil.duplicate(returnType);
 			box(returnType);
+			loadCurrentThread();
 			loadLocal(methodIndexVar);
 		}
-		invokeEventLogger("returnedValue", "(Ljava/lang/Object;I)V");
+		invokeEventLogger("returnedValue", "(Ljava/lang/Object;Ljava/lang/Thread;I)V");
 	}
 
 	private void invokeEventLogger(String method, String descriptor) {
@@ -139,9 +142,10 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 			push(name);
 			swap();
 
+			loadCurrentThread();
 			loadLocal(methodIndexVar);
 
-			invokeEventLogger("putField", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;I)V");
+			invokeEventLogger("putField", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Thread;I)V");
 			break;
 		}
 
@@ -158,18 +162,21 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		case Opcodes.ARETURN:
 			asmUtil.duplicate(getOperandType(opcode));
 			box(getOperandType(opcode));
+			loadCurrentThread();
 			loadLocal(methodIndexVar);
-			invokeEventLogger("returnValue", "(Ljava/lang/Object;I)V");
+			invokeEventLogger("returnValue", "(Ljava/lang/Object;Ljava/lang/Thread;I)V");
 			break;
 		case Opcodes.RETURN:
 			visitInsn(Opcodes.ACONST_NULL);
+			loadCurrentThread();
 			loadLocal(methodIndexVar);
-			invokeEventLogger("returnValue", "(Ljava/lang/Object;I)V");
+			invokeEventLogger("returnValue", "(Ljava/lang/Object;Ljava/lang/Thread;I)V");
 			break;
 		case Opcodes.ATHROW:
 			dup();
+			loadCurrentThread();
 			loadLocal(methodIndexVar);
-			invokeEventLogger("throwException", "(Ljava/lang/Throwable;I)V");
+			invokeEventLogger("throwException", "(Ljava/lang/Throwable;Ljava/lang/Thread;I)V");
 			break;
 		case Opcodes.IASTORE:
 		case Opcodes.FASTORE:
@@ -197,9 +204,10 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		loadLocal(valueVariable);
 		box(type);
 
+		loadCurrentThread();
 		loadLocal(methodIndexVar);
 
-		invokeEventLogger("storeArray", "(Ljava/lang/Object;ILjava/lang/Object;I)V");
+		invokeEventLogger("storeArray", "(Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Thread;I)V");
 
 		loadLocal(arrayRefVariable);
 		loadLocal(indexVariable);
@@ -219,8 +227,9 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 
 		if(exceptionHandlers.contains(label)) {
 			dup();
+			loadCurrentThread();
 			loadLocal(methodIndexVar);
-			invokeEventLogger("catchException", "(Ljava/lang/Throwable;I)V");
+			invokeEventLogger("catchException", "(Ljava/lang/Throwable;Ljava/lang/Thread;I)V");
 		}
 	}
 
@@ -232,9 +241,10 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		visitVarInsn(Opcodes.ILOAD, var);
 		box(Type.INT_TYPE);
 
+		loadCurrentThread();
 		loadLocal(methodIndexVar);
 
-		invokeEventLogger("store", "(ILjava/lang/Object;I)V");
+		invokeEventLogger("store", "(ILjava/lang/Object;Ljava/lang/Thread;I)V");
 	}
 
 	@Override
@@ -249,8 +259,9 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 			box(getOperandType(opcode));
 			push(var);
 			asmUtil.swap(1, 1);
+			loadCurrentThread();
 			loadLocal(methodIndexVar);
-			invokeEventLogger("store", "(ILjava/lang/Object;I)V");
+			invokeEventLogger("store", "(ILjava/lang/Object;Ljava/lang/Thread;I)V");
 			break;
 		}
 
@@ -306,14 +317,20 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 			}
 			box(AsmUtil.getOperandType(opcode));
 		}
+		loadCurrentThread();
 		loadLocal(methodIndexVar);
-		invokeEventLogger("exitWithValue", "(Ljava/lang/Object;I)V");
+		invokeEventLogger("exitWithValue", "(Ljava/lang/Object;Ljava/lang/Thread;I)V");
 	}
 
 	@Override
 	public void onThrow() {
 		super.visitInsn(Opcodes.DUP);
+		loadCurrentThread();
 		loadLocal(methodIndexVar);
-		invokeEventLogger("exitWithException", "(Ljava/lang/Throwable;I)V");
+		invokeEventLogger("exitWithException", "(Ljava/lang/Throwable;Ljava/lang/Thread;I)V");
+	}
+
+	private void loadCurrentThread() {
+		mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
 	}
 }
