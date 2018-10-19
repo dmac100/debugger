@@ -16,6 +16,10 @@ public class EventLogger {
 		return events.stream().map(Event::toString).collect(toList());
 	}
 	
+	public static List<Event> getEvents() {
+		return new ArrayList<>(events);
+	}
+	
 	public static void clear() {
 		Events.clear();
 		events.clear();

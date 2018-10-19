@@ -26,22 +26,34 @@ public class Events {
 		return object.getClass().getSimpleName() + "-" + id;
 	}
 	
-	public interface Event {
-	}
-	
-	public static class PutFieldEvent implements Event {
-		public final Object object;
-		public final String name;
-		public final Object value;
+	public static abstract class Event {
 		public final Thread thread;
 		public final int methodIndex;
 		
+		public Event(Thread thread, int methodIndex) {
+			this.thread = thread;
+			this.methodIndex = methodIndex;
+		}
+		
+		public Thread getThread() {
+			return thread;
+		}
+		
+		public int getMethodIndex() {
+			return methodIndex;
+		}
+	}
+	
+	public static class PutFieldEvent extends Event {
+		public final Object object;
+		public final String name;
+		public final Object value;
+		
 		public PutFieldEvent(Object object, String name, Object value, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.object = object;
 			this.name = name;
 			this.value = value;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
@@ -49,17 +61,14 @@ public class Events {
 		}
 	}
 	
-	public static class StoreEvent implements Event {
+	public static class StoreEvent extends Event {
 		public final int varIndex;
 		public final Object value;
-		public final Thread thread;
-		public final int methodIndex;
 		
 		public StoreEvent(int varIndex, Object value, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.varIndex = varIndex;
 			this.value = value;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
@@ -67,19 +76,16 @@ public class Events {
 		}
 	}
 	
-	public static class StoreArrayEvent implements Event {
+	public static class StoreArrayEvent extends Event {
 		public final Object array;
 		public final int index;
 		public final Object value;
-		public final Thread thread;
-		public final int methodIndex;
 		
 		public StoreArrayEvent(Object array, int index, Object value, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.array = array;
 			this.index = index;
 			this.value = value;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
@@ -87,21 +93,18 @@ public class Events {
 		}
 	}
 
-	public static class InvokeMethodEvent implements Event {
+	public static class InvokeMethodEvent extends Event {
 		public final Object object;
 		public final String name;
 		public final String descriptor;
 		public final Object[] args;
-		public final Thread thread;
-		public final int methodIndex;
 		
 		public InvokeMethodEvent(Object object, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.object = object;
 			this.name = name;
 			this.descriptor = descriptor;
 			this.args = args;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
@@ -109,21 +112,18 @@ public class Events {
 		}
 	}
 	
-	public static class InvokeSpecialMethod implements Event {
+	public static class InvokeSpecialMethod extends Event {
 		public final Object object;
 		public final String name;
 		public final String descriptor;
 		public final Object[] args;
-		public final Thread thread;
-		public final int methodIndex;
 		
 		public InvokeSpecialMethod(Object object, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.object = object;
 			this.name = name;
 			this.descriptor = descriptor;
 			this.args = args;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
@@ -131,21 +131,18 @@ public class Events {
 		}
 	}
 	
-	public static class InvokeStaticMethodEvent implements Event {
+	public static class InvokeStaticMethodEvent extends Event {
 		public final String className;
 		public final String name;
 		public final String descriptor;
 		public final Object[] args;
-		public final Thread thread;
-		public final int methodIndex;
 		
 		public InvokeStaticMethodEvent(String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.className = className;
 			this.name = name;
 			this.descriptor = descriptor;
 			this.args = args;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
@@ -153,15 +150,12 @@ public class Events {
 		}
 	}
 	
-	public static class ReturnValueEvent implements Event {
+	public static class ReturnValueEvent extends Event {
 		public final Object value;
-		public final Thread thread;
-		public final int methodIndex;
 		
 		public ReturnValueEvent(Object value, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.value = value;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
@@ -169,15 +163,12 @@ public class Events {
 		}
 	}
 	
-	public static class ReturnedValueEvent implements Event {
+	public static class ReturnedValueEvent extends Event {
 		public final Object value;
-		public final Thread thread;
-		public final int methodIndex;
 		
 		public ReturnedValueEvent(Object value, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.value = value;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
@@ -185,15 +176,12 @@ public class Events {
 		}
 	}
 	
-	public static class ThrowExceptionEvent implements Event {
+	public static class ThrowExceptionEvent extends Event {
 		public final Throwable throwable;
-		public final Thread thread;
-		public final int methodIndex;
 		
 		public ThrowExceptionEvent(Throwable throwable, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.throwable = throwable;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
@@ -201,15 +189,12 @@ public class Events {
 		}
 	}
 	
-	public static class CatchExceptionEvent implements Event {
+	public static class CatchExceptionEvent extends Event {
 		public final Throwable throwable;
-		public final Thread thread;
-		public final int methodIndex;
 		
 		public CatchExceptionEvent(Throwable throwable, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.throwable = throwable;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
@@ -217,15 +202,12 @@ public class Events {
 		}
 	}
 	
-	public static class ExitWithExceptionEvent implements Event {
+	public static class ExitWithExceptionEvent extends Event {
 		public final Throwable throwable;
-		public final Thread thread;
-		public final int methodIndex;
 		
 		public ExitWithExceptionEvent(Throwable throwable, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.throwable = throwable;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
@@ -233,15 +215,12 @@ public class Events {
 		}
 	}
 	
-	public static class ExitWithValueEvent implements Event {
+	public static class ExitWithValueEvent extends Event {
 		public final Object value;
-		public final Thread thread;
-		public final int methodIndex;
 		
 		public ExitWithValueEvent(Object value, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
 			this.value = value;
-			this.thread = thread;
-			this.methodIndex = methodIndex;
 		}
 		
 		public String toString() {
