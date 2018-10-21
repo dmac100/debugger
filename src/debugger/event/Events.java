@@ -27,7 +27,7 @@ public class Events {
 	}
 	
 	public static abstract class Event {
-		public final Thread thread;
+		public Thread thread;
 		public final int methodIndex;
 		
 		public Event(Thread thread, int methodIndex) {
@@ -112,13 +112,13 @@ public class Events {
 		}
 	}
 	
-	public static class InvokeSpecialMethod extends Event {
+	public static class InvokeSpecialMethodEvent extends Event {
 		public final Object object;
 		public final String name;
 		public final String descriptor;
 		public final Object[] args;
 		
-		public InvokeSpecialMethod(Object object, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
+		public InvokeSpecialMethodEvent(Object object, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
 			super(thread, methodIndex);
 			this.object = object;
 			this.name = name;
@@ -199,6 +199,46 @@ public class Events {
 		
 		public String toString() {
 			return "CATCH: " + throwable.getClass().getName() + ", " + throwable.getMessage();
+		}
+	}
+	
+	public static class EnterVirtualEvent extends Event {
+		public final Object object;
+		public final String name;
+		public final String descriptor;
+		public final Object[] args;
+
+		public EnterVirtualEvent(Object object, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
+			this.object = object;
+			this.name = name;
+			this.descriptor = descriptor;
+			this.args = args;
+			this.thread = thread;
+		}
+		
+		public String toString() {
+			return "ENTER: " + getObjectName(object) + ", " + name + ", " + descriptor + ", " + Arrays.asList(args);
+		}
+	}
+	
+	public static class EnterStaticEvent extends Event {
+		public final String className;
+		public final String name;
+		public final String descriptor;
+		public final Object[] args;
+
+		public EnterStaticEvent(String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
+			this.className = className;
+			this.name = name;
+			this.descriptor = descriptor;
+			this.args = args;
+			this.thread = thread;
+		}
+		
+		public String toString() {
+			return "ENTER STATIC: " + className + ", " + name + ", " + descriptor + ", " + Arrays.asList(args);
 		}
 	}
 	

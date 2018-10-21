@@ -47,7 +47,7 @@ public class EventLogger {
 	}
 	
 	public static void invokeSpecialMethod(Object object, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
-		events.add(new Events.InvokeSpecialMethod(object, name, descriptor, args, thread, methodIndex));
+		events.add(new Events.InvokeSpecialMethodEvent(object, name, descriptor, args, thread, methodIndex));
 	}
 	
 	public static void invokeStaticMethod(String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
@@ -68,6 +68,14 @@ public class EventLogger {
 	
 	public static void catchException(Throwable t, Thread thread, int methodIndex) {
 		events.add(new Events.CatchExceptionEvent(t, thread, methodIndex));
+	}
+
+	public static void enterVirtual(Object object, String methodName, String descriptor, Object[] args, Thread thread, int methodIndex) {
+		events.add(new Events.EnterVirtualEvent(object, methodName, descriptor, args, thread, methodIndex));
+	}
+	
+	public static void enterStatic(String className, String methodName, String descriptor, Object[] args, Thread thread, int methodIndex) {
+		events.add(new Events.EnterStaticEvent(className, methodName, descriptor, args, thread, methodIndex));
 	}
 	
 	public static void exitWithException(Throwable t, Thread thread, int methodIndex) {

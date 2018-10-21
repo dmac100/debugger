@@ -113,6 +113,14 @@ public class InstrumentorTest {
 			return (n <= 1) ? 1 : n * recursiveMethod(n - 1, b);
 		}
 		
+		public int intParameterMethod(int x, int y) {
+			return x + y;
+		}
+		
+		public static int staticIntParameterMethod(int x, int y) {
+			return x + y;
+		}
+		
 		public int callParameterTypes() {
 			return parameterTypes(true, (byte) 1, '2', (short) 3, 4, 5, 6, 7, null, null);
 		}
@@ -386,6 +394,23 @@ public class InstrumentorTest {
 		new TestMethodsClass().throwException();
 		assertLog(Arrays.asList("CATCH:"), Arrays.asList(
 			"CATCH: java.lang.RuntimeException, Test Exception"
+		));
+	}
+	
+	@Test
+	public void enter() {
+		new TestMethodsClass().intParameterMethod(3, 4);
+		assertLog(Arrays.asList("ENTER:"), Arrays.asList(
+			"ENTER: TestMethodsClass-1, <init>, ()V, []",
+			"ENTER: TestMethodsClass-1, intParameterMethod, (II)I, [3, 4]"
+		));
+	}
+	
+	@Test
+	public void enterStatic() {
+		TestMethodsClass.staticIntParameterMethod(3, 4);
+		assertLog(Arrays.asList("ENTER STATIC:"), Arrays.asList(
+			"ENTER STATIC: debugger/instrumentation/InstrumentorTest$TestMethodsClass, staticIntParameterMethod, (II)I, [3, 4]"
 		));
 	}
 	

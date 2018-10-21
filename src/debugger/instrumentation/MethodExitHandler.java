@@ -1,7 +1,8 @@
 package debugger.instrumentation;
 
 public interface MethodExitHandler {
+	public default void onEnter() {};
 	public default void onFinally() {};
 	public default void onReturn(int opcode) {};
-	public default void onThrow() {};
+	public default void onThrow() {}
 }

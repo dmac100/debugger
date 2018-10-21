@@ -16,12 +16,22 @@ import debugger.instrumentation.util.AsmUtil;
 
 public class EventLoggerMethodVisitor extends GeneratorAdapter implements MethodExitHandler {
 	private final AsmUtil asmUtil;
+	
+	private final int access;
+	private final String className;
+	private final String methodName;
+	private final String descriptor;
+	
 	private final Set<Label> exceptionHandlers = new HashSet<>();
 	private int methodIndexVar = -1;
 
-	public EventLoggerMethodVisitor(int access, String name, String descriptor, MethodVisitor methodVisitor) {
-		super(Opcodes.ASM7, methodVisitor, access, name, descriptor);
+	public EventLoggerMethodVisitor(int access, String className, String methodName, String descriptor, MethodVisitor methodVisitor) {
+		super(Opcodes.ASM7, methodVisitor, access, methodName, descriptor);
 		this.asmUtil = new AsmUtil(methodVisitor);
+		this.access = access;
+		this.className = className;
+		this.methodName = methodName;
+		this.descriptor = descriptor;
 	}
 
 	@Override
@@ -36,7 +46,7 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
 		Type[] argTypes = Type.getArgumentTypes(descriptor);
-
+		
 		switch(opcode) {
 		case Opcodes.INVOKESPECIAL:
 			visitInvokeMethod(owner, name, descriptor, argTypes, false, true);
@@ -302,6 +312,27 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 			return Type.getType(Object.class);
 		default:
 			throw new IllegalArgumentException("Unknown opcode: " + opcode);
+		}
+	}
+	
+	@Override
+	public void onEnter() {
+		if((access & Opcodes.ACC_STATIC) == 0) {
+			loadThis();
+			push(methodName);
+			push(descriptor);
+			loadArgArray();
+			loadCurrentThread();
+			loadLocal(methodIndexVar);
+			invokeEventLogger("enterVirtual", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
+		} else {
+			push(className);
+			push(methodName);
+			push(descriptor);
+			loadArgArray();
+			loadCurrentThread();
+			loadLocal(methodIndexVar);
+			invokeEventLogger("enterStatic", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		}
 	}
 

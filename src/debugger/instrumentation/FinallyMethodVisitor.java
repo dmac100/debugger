@@ -86,6 +86,7 @@ class FinallyMethodVisitor extends AdviceAdapter {
 	@Override
 	public void onMethodEnter() {
 		super.onMethodEnter();
+		methodExitHandler.onEnter();
 		inOriginalMethod = true;
 	}
 
@@ -94,8 +95,8 @@ class FinallyMethodVisitor extends AdviceAdapter {
 		inOriginalMethod = false;
 		
 		super.visitLabel(exceptionHandler);
-		onThrow();
-		onFinally();
+		methodExitHandler.onThrow();
+		methodExitHandler.onFinally();
 		super.visitInsn(Opcodes.ATHROW);
 		
 		super.visitMaxs(0, 0);
@@ -106,8 +107,8 @@ class FinallyMethodVisitor extends AdviceAdapter {
 		startPossibleTryBlock();
 		
 		if(opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN) {
-			onReturn(opcode);
-			onFinally();
+			methodExitHandler.onReturn(opcode);
+			methodExitHandler.onFinally();
 			super.visitInsn(opcode);
 			endTryBlock();
 		} else if(opcode == Opcodes.ATHROW) {
@@ -148,17 +149,5 @@ class FinallyMethodVisitor extends AdviceAdapter {
 	private void endTryBlock() {
 		super.visitLabel(exceptionEnd);
 		exceptionEnd = null;
-	}
-	
-	protected void onFinally() {
-		methodExitHandler.onFinally();
-	}
-	
-	protected void onReturn(int opcode) {
-		methodExitHandler.onReturn(opcode);
-	}
-	
-	protected void onThrow() {
-		methodExitHandler.onThrow();
 	}
 }
