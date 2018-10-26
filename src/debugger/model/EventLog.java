@@ -1,5 +1,8 @@
 package debugger.model;
 
+import static debugger.util.CollectionUtil.getLast;
+import static debugger.util.CollectionUtil.lastIndexOf;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -17,6 +20,7 @@ import debugger.event.Events.ExitWithValueEvent;
 import debugger.event.Events.InvokeMethodEvent;
 import debugger.event.Events.InvokeSpecialMethodEvent;
 import debugger.event.Events.InvokeStaticMethodEvent;
+import debugger.event.Events.ReturnValueEvent;
 import debugger.event.Events.ReturnedValueEvent;
 import debugger.event.Events.SetLocalNameEvent;
 import debugger.event.Events.StoreEvent;
@@ -36,12 +40,16 @@ public class EventLog {
 			.collect(Collectors.toList());
 	}
 
-	public List<CallStackNode> getCallStack() {
+	public List<CallStackNode> getCallStack(Thread thread) {
 		CallStackNode rootNode = new CallStackNode();
 		
 		CallStackNode currentNode = rootNode;
 		
 		for(Event event:events) {
+			if(event.thread != thread) {
+				continue;
+			}
+			
 			if(event instanceof EnterMethodEvent) {
 				EnterMethodEvent enterMethodEvent = ((EnterMethodEvent) event);
 				CallStackNode node = new CallStackNode();
@@ -136,12 +144,16 @@ public class EventLog {
 		return true;
 	}
 
-	public Map<String, Object> getLocalVariablesAt(int index) {
+	public Map<String, Object> getLocalVariablesAt(Thread thread, int index) {
 		List<Map<Integer, Object>> localsStack = new ArrayList<>();
 		List<Map<Integer, String>> localsNameStack = new ArrayList<>();
 		
 		for(int i = 0; i < index; i++) {
 			Event event = events.get(i);
+			
+			if(event.thread != thread) {
+				continue;
+			}
 			
 			if(event instanceof EnterMethodEvent) {
 				localsStack.add(new HashMap<>());
@@ -175,7 +187,7 @@ public class EventLog {
 		return localsByName;
 	}
 
-	private static <T> T getLast(List<T> list) {
-		return list.get(list.size() - 1);
+	public int getLastIndex(Thread thread) {
+		return lastIndexOf(events, e -> e.thread == thread && e instanceof ReturnValueEvent);
 	}
 }

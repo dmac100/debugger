@@ -6,14 +6,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import debugger.event.EventLogger;
-import debugger.event.Events.ReturnValueEvent;
 import debugger.instrumentation.Instrumentor;
 
 class InstrumentedClass {
@@ -109,6 +107,10 @@ public class EventLogTest {
 		EventLogger.clear();
 	}
 	
+	private Thread getThread() {
+		return eventLog.getThreads().get(0);
+	}
+	
 	@Test
 	public void getThreads() {
 		QuickSort.sort(Arrays.asList(5, 2, 7, 5, 9, 8, 7, 1, 3));
@@ -124,7 +126,7 @@ public class EventLogTest {
 		QuickSort.sort(Arrays.asList(5, 2, 7, 5, 9, 8, 7, 1, 3));
 		eventLog = new EventLog(EventLogger.getEvents());
 		
-		String callStack = printCallStack(eventLog.getCallStack());
+		String callStack = printCallStack(eventLog.getCallStack(getThread()));
 		
 		callStack = callStack
 			.replaceAll(".*<init>.*[\r\n?]", "")
@@ -151,7 +153,7 @@ public class EventLogTest {
 		InstrumentedClass.f();
 		eventLog = new EventLog(EventLogger.getEvents());
 		
-		String callStack = printCallStack(eventLog.getCallStack());
+		String callStack = printCallStack(eventLog.getCallStack(getThread()));
 		
 		String expectedCallStack = "debugger/model/InstrumentedClass.f([]) - 5\n";
 		expectedCallStack += "  debugger/model/InstrumentedClass.g([]) - 4\n";
@@ -167,7 +169,7 @@ public class EventLogTest {
 		new InstrumentedClass().a();
 		eventLog = new EventLog(EventLogger.getEvents());
 		
-		String callStack = printCallStack(eventLog.getCallStack())
+		String callStack = printCallStack(eventLog.getCallStack(getThread()))
 			.replaceAll(".*<init>.*[\r\n?]", "");
 		
 		String expectedCallStack = "debugger/model/InstrumentedClass.a([]) - 5\n";
@@ -184,7 +186,7 @@ public class EventLogTest {
 		new InstrumentedSubclass();
 		eventLog = new EventLog(EventLogger.getEvents());
 		
-		String callStack = printCallStack(eventLog.getCallStack());
+		String callStack = printCallStack(eventLog.getCallStack(getThread()));
 		
 		String expectedCallStack = "debugger/model/InstrumentedSubclass.<init>([]) - null\n";
 		expectedCallStack += "  debugger/model/InstrumentedClass.<init>([1]) - null\n";
@@ -200,7 +202,7 @@ public class EventLogTest {
 		
 		eventLog = new EventLog(EventLogger.getEvents());
 		
-		String callStack = printCallStack(eventLog.getCallStack())
+		String callStack = printCallStack(eventLog.getCallStack(getThread()))
 			.replaceAll(".*<init>.*[\r\n?]", "");
 		
 		String expectedCallStack = "debugger/model/InstrumentedClass.throwException1([]) - 1\n";
@@ -216,7 +218,7 @@ public class EventLogTest {
 		
 		eventLog = new EventLog(EventLogger.getEvents());
 		
-		String callStack = printCallStack(eventLog.getCallStack());
+		String callStack = printCallStack(eventLog.getCallStack(getThread()));
 		
 		String expectedCallStack = "debugger/model/InstrumentedClass.throwException4([]) - 1\n";
 		expectedCallStack += "  debugger/model/NonInstrumentedClass.throwException5([]) - null\n";
@@ -247,9 +249,9 @@ public class EventLogTest {
 		QuickSort.sort(Arrays.asList(5, 2, 7, 5, 9, 8, 7, 1, 3));
 		eventLog = new EventLog(EventLogger.getEvents());
 		
-		int index = lastIndexOf(EventLogger.getEvents(), e -> e instanceof ReturnValueEvent) - 1;
+		int index = eventLog.getLastIndex(getThread()) - 1;
 		
-		Map<String, Object> locals = new HashMap<>(eventLog.getLocalVariablesAt(index));
+		Map<String, Object> locals = new HashMap<>(eventLog.getLocalVariablesAt(getThread(), index));
 		locals.replaceAll((k, v) -> ToStringImpl.toString(v));
 		
 		assertEquals(Map.of(
@@ -258,15 +260,5 @@ public class EventLogTest {
 			"right", "[7, 5, 9, 8, 7]",
 			"result", "[1, 2, 3, 5, 5, 7, 7, 8, 9]"
 		), locals);
-	}
-
-	private static <T> int lastIndexOf(List<T> list, Predicate<? super T> filter) {
-		int index = -1;
-		for(int i = 0; i < list.size(); i++) {
-			if(filter.test(list.get(i))) {
-				index = i;
-			}
-		}
-		return index;
 	}
 }
