@@ -260,4 +260,19 @@ public class Events {
 			return "EXIT VALUE: " + value;
 		}
 	}
+	
+	public static class SetLocalNameEvent extends Event {
+		public final String name;
+		public final int index;
+
+		public SetLocalNameEvent(String name, int index, Thread thread, int methodIndex) {
+			super(thread, methodIndex);
+			this.name = name;
+			this.index = index;
+		}
+		
+		public String toString() {
+			return "SET LOCAL NAME: " + name + ", " + index;
+		}
+	}
 }

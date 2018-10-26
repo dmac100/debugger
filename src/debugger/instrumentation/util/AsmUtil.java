@@ -205,4 +205,10 @@ public class AsmUtil {
 			throw new IllegalArgumentException("Unknown opcode: " + opcode);
 		}
 	}
+	
+	public void println(String value) {
+		mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+		mv.visitLdcInsn(value);
+		mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
+	}
 }

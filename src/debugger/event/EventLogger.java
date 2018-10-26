@@ -85,4 +85,8 @@ public class EventLogger {
 	public static void exitWithValue(Object value, Thread thread, int methodIndex) {
 		events.add(new Events.ExitWithValueEvent(value, thread, methodIndex));
 	}
+	
+	public static void setLocalName(String name, int index, Thread thread, int methodIndex) {
+		events.add(new Events.SetLocalNameEvent(name, index, thread, methodIndex));
+	}
 }

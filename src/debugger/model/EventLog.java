@@ -3,7 +3,10 @@ package debugger.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -15,6 +18,8 @@ import debugger.event.Events.InvokeMethodEvent;
 import debugger.event.Events.InvokeSpecialMethodEvent;
 import debugger.event.Events.InvokeStaticMethodEvent;
 import debugger.event.Events.ReturnedValueEvent;
+import debugger.event.Events.SetLocalNameEvent;
+import debugger.event.Events.StoreEvent;
 
 public class EventLog {
 	private final List<Event> events;
@@ -129,5 +134,48 @@ public class EventLog {
 		if(!Objects.equals(node1.getClassName(), node2.getClassName())) return false;
 		if(!Objects.equals(node1.getDescriptor(), node2.getDescriptor())) return false;
 		return true;
+	}
+
+	public Map<String, Object> getLocalVariablesAt(int index) {
+		List<Map<Integer, Object>> localsStack = new ArrayList<>();
+		List<Map<Integer, String>> localsNameStack = new ArrayList<>();
+		
+		for(int i = 0; i < index; i++) {
+			Event event = events.get(i);
+			
+			if(event instanceof EnterMethodEvent) {
+				localsStack.add(new HashMap<>());
+				localsNameStack.add(new HashMap<>());
+			}
+			
+			if(event instanceof ExitWithValueEvent || event instanceof ExitWithExceptionEvent) {
+				localsStack.remove(localsStack.size() - 1);
+				localsNameStack.remove(localsNameStack.size() - 1);
+			}
+			
+			if(event instanceof StoreEvent) {
+				StoreEvent storeEvent = ((StoreEvent) event);
+				getLast(localsStack).put(storeEvent.varIndex, storeEvent.value);
+			}
+			
+			if(event instanceof SetLocalNameEvent) {
+				SetLocalNameEvent setLocalNameEvent = ((SetLocalNameEvent) event);
+				getLast(localsNameStack).put(setLocalNameEvent.index, setLocalNameEvent.name);
+			}
+		}
+		
+		Map<Integer, Object> locals = getLast(localsStack);
+		Map<Integer, String> localsName = getLast(localsNameStack);
+		
+		Map<String, Object> localsByName = new LinkedHashMap<>();
+		locals.forEach((k, v) -> {
+			localsByName.put(localsName.getOrDefault(k, "local-" + k), v);
+		});
+		
+		return localsByName;
+	}
+
+	private static <T> T getLast(List<T> list) {
+		return list.get(list.size() - 1);
 	}
 }

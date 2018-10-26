@@ -1,8 +1,10 @@
 package debugger.instrumentation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.objectweb.asm.Label;
@@ -21,6 +23,10 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 	private final String className;
 	private final String methodName;
 	private final String descriptor;
+
+	private final Map<Integer, String> localVariableNames = new HashMap<>();
+	private final Label methodEndLabel = new Label();
+	private final Label methodStartLabel = new Label();
 	
 	private final Set<Label> exceptionHandlers = new HashSet<>();
 	private int methodIndexVar = -1;
@@ -43,6 +49,9 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		storeLocal(methodIndexVar);
 		
 		onEnterWithUninitializedThis();
+		
+		visitJumpInsn(Opcodes.GOTO, methodEndLabel);
+		visitLabel(methodStartLabel);
 	}
 
 	@Override
@@ -164,6 +173,28 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		super.visitFieldInsn(opcode, owner, name, descriptor);
 	}
 
+	@Override
+	public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
+		super.visitLocalVariable(name, descriptor, signature, start, end, index);
+		localVariableNames.put(index, name);
+	}
+	
+	@Override
+	public void visitMaxs(int maxStack, int maxLocals) {
+		super.visitLabel(methodEndLabel);
+		
+		localVariableNames.forEach((index, name) -> {
+			push(name);
+			push(index);
+			loadCurrentThread();
+			loadLocal(methodIndexVar);
+			invokeEventLogger("setLocalName", "(Ljava/lang/String;ILjava/lang/Thread;I)V");
+		});
+		
+		super.visitJumpInsn(Opcodes.GOTO, methodStartLabel);
+		super.visitMaxs(0, 0);
+	}
+	
 	@Override
 	public void visitInsn(int opcode) {
 		switch(opcode) {

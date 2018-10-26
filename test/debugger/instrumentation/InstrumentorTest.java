@@ -435,6 +435,27 @@ public class InstrumentorTest {
 			"EXIT VALUE: 2"
 		));
 	}
+	
+	@Test
+	public void localVariableNames() {
+		new TestMethodsClass().localVariableTypes();
+		assertLog(Arrays.asList("SET LOCAL NAME:", "ENTER METHOD:"), Arrays.asList(
+			"ENTER METHOD: debugger/instrumentation/InstrumentorTest$TestMethodsClass, <init>, ()V, []",
+			"SET LOCAL NAME: this, 0",
+			"ENTER METHOD: debugger/instrumentation/InstrumentorTest$TestMethodsClass, localVariableTypes, ()V, []",
+			"SET LOCAL NAME: this, 0",
+			"SET LOCAL NAME: a, 1",
+			"SET LOCAL NAME: b, 2",
+			"SET LOCAL NAME: c, 3",
+			"SET LOCAL NAME: d, 4",
+			"SET LOCAL NAME: e, 5",
+			"SET LOCAL NAME: f, 6",
+			"SET LOCAL NAME: g, 8",
+			"SET LOCAL NAME: h, 9",
+			"SET LOCAL NAME: i, 11",
+			"SET LOCAL NAME: j, 12"
+		));
+	}
 
 	private void assertLog(List<String> filter, List<String> expectedLog) {
 		Predicate<String> lineBeginsWithFilter = line -> filter.stream().anyMatch(f -> line.startsWith(f));

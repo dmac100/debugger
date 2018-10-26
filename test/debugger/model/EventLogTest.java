@@ -3,13 +3,17 @@ package debugger.model;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import debugger.event.EventLogger;
+import debugger.event.Events.ReturnValueEvent;
 import debugger.instrumentation.Instrumentor;
 
 class InstrumentedClass {
@@ -221,7 +225,6 @@ public class EventLogTest {
 	}
 
 	public static String printCallStack(List<CallStackNode> callStack) {
-		System.out.println();
 		StringBuilder s = new StringBuilder();
 		printCallStack(callStack, s, "");
 		return s.toString();
@@ -237,5 +240,33 @@ public class EventLogTest {
 				printCallStack(node.getChildren(), s, indent + "  ");
 			}
 		}
+	}
+	
+	@Test
+	public void getLocalVariables() {
+		QuickSort.sort(Arrays.asList(5, 2, 7, 5, 9, 8, 7, 1, 3));
+		eventLog = new EventLog(EventLogger.getEvents());
+		
+		int index = lastIndexOf(EventLogger.getEvents(), e -> e instanceof ReturnValueEvent) - 1;
+		
+		Map<String, Object> locals = new HashMap<>(eventLog.getLocalVariablesAt(index));
+		locals.replaceAll((k, v) -> ToStringImpl.toString(v));
+		
+		assertEquals(Map.of(
+			"pivot", "5",
+			"left", "[2, 1, 3]",
+			"right", "[7, 5, 9, 8, 7]",
+			"result", "[1, 2, 3, 5, 5, 7, 7, 8, 9]"
+		), locals);
+	}
+
+	private static <T> int lastIndexOf(List<T> list, Predicate<? super T> filter) {
+		int index = -1;
+		for(int i = 0; i < list.size(); i++) {
+			if(filter.test(list.get(i))) {
+				index = i;
+			}
+		}
+		return index;
 	}
 }
