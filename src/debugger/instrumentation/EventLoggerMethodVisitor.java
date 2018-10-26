@@ -41,6 +41,8 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		methodIndexVar = newLocal(Type.INT_TYPE);
 		invokeEventLogger("nextMethodIndex", "()I");
 		storeLocal(methodIndexVar);
+		
+		onEnterWithUninitializedThis();
 	}
 
 	@Override
@@ -83,7 +85,7 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 
 		loadCurrentThread();
 		loadLocal(methodIndexVar);
-
+		
 		if(isStatic) {
 			invokeEventLogger("invokeStaticMethod", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		} else if(isSpecial) {
@@ -315,25 +317,23 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		}
 	}
 	
+	public void onEnterWithUninitializedThis() {
+		push(className);
+		push(methodName);
+		push(descriptor);
+		loadArgArray();
+		loadCurrentThread();
+		loadLocal(methodIndexVar);
+		invokeEventLogger("enterMethod", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
+	}
+	
 	@Override
 	public void onEnter() {
 		if((access & Opcodes.ACC_STATIC) == 0) {
 			loadThis();
-			push(className);
-			push(methodName);
-			push(descriptor);
-			loadArgArray();
 			loadCurrentThread();
 			loadLocal(methodIndexVar);
-			invokeEventLogger("enterVirtual", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
-		} else {
-			push(className);
-			push(methodName);
-			push(descriptor);
-			loadArgArray();
-			loadCurrentThread();
-			loadLocal(methodIndexVar);
-			invokeEventLogger("enterStatic", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
+			invokeEventLogger("setThis", "(Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		}
 	}
 

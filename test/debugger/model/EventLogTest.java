@@ -177,6 +177,21 @@ public class EventLogTest {
 	}
 	
 	@Test
+	public void getCallStack_superCall() {
+		new InstrumentedSubclass();
+		eventLog = new EventLog(EventLogger.getEvents());
+		
+		String callStack = printCallStack(eventLog.getCallStack());
+		
+		String expectedCallStack = "debugger/model/InstrumentedSubclass.<init>([]) - null\n";
+		expectedCallStack += "  debugger/model/InstrumentedClass.<init>([1]) - null\n";
+		expectedCallStack += "    java/lang/Object.<init>([]) - null\n";
+		expectedCallStack += "    debugger/model/NonInstrumentedClass.<init>([]) - null\n";
+		
+		assertEquals(expectedCallStack, callStack);
+	}
+	
+	@Test
 	public void getCallStack_withException() {
 		InstrumentedClass.throwException1();
 		

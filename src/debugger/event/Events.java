@@ -202,35 +202,26 @@ public class Events {
 		}
 	}
 	
-	public static class EnterVirtualEvent extends Event {
-		public final Object object;
-		public final String className;
-		public final String name;
-		public final String descriptor;
-		public final Object[] args;
+	public static class SetThisEvent extends Event {
+		private final Object object;
 
-		public EnterVirtualEvent(Object object, String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
+		public SetThisEvent(Object object, Thread thread, int methodIndex) {
 			super(thread, methodIndex);
 			this.object = object;
-			this.className = className;
-			this.name = name;
-			this.descriptor = descriptor;
-			this.args = args;
-			this.thread = thread;
 		}
 		
 		public String toString() {
-			return "ENTER: " + getObjectName(object) + ", " + name + ", " + descriptor + ", " + Arrays.asList(args);
+			return "SETTHIS: " + getObjectName(object);
 		}
 	}
 	
-	public static class EnterStaticEvent extends Event {
+	public static class EnterMethodEvent extends Event {
 		public final String className;
 		public final String name;
 		public final String descriptor;
 		public final Object[] args;
 
-		public EnterStaticEvent(String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
+		public EnterMethodEvent(String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
 			super(thread, methodIndex);
 			this.className = className;
 			this.name = name;
@@ -240,7 +231,7 @@ public class Events {
 		}
 		
 		public String toString() {
-			return "ENTER STATIC: " + className + ", " + name + ", " + descriptor + ", " + Arrays.asList(args);
+			return "ENTER METHOD: " + className + ", " + name + ", " + descriptor + ", " + Arrays.asList(args);
 		}
 	}
 	

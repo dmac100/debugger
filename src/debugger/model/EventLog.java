@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import debugger.event.Events;
-import debugger.event.Events.EnterStaticEvent;
-import debugger.event.Events.EnterVirtualEvent;
+import debugger.event.Events.EnterMethodEvent;
 import debugger.event.Events.Event;
 import debugger.event.Events.ExitWithExceptionEvent;
 import debugger.event.Events.ExitWithValueEvent;
@@ -100,37 +99,15 @@ public class EventLog {
 		CallStackNode currentNode = null;
 		
 		for(Event event:events) {
-			if(event instanceof EnterStaticEvent) {
-				EnterStaticEvent enterStaticEvent = ((EnterStaticEvent) event);
+			if(event instanceof EnterMethodEvent) {
+				EnterMethodEvent enterMethodEvent = ((EnterMethodEvent) event);
 				CallStackNode node = new CallStackNode();
-				node.methodIndex = enterStaticEvent.methodIndex;
+				node.methodIndex = enterMethodEvent.methodIndex;
 				node.parentNode = currentNode;
-				node.methodName = enterStaticEvent.name;
-				node.descriptor = enterStaticEvent.descriptor;
-				node.className = enterStaticEvent.className;
-				node.arguments = Arrays.asList(enterStaticEvent.args);
-				if(currentNode == null) {
-					nodes.add(node);
-					currentNode = node;
-				} else {
-					if(sameMethod(currentNode, node)) {
-						currentNode.methodIndex = node.methodIndex;
-					} else {
-						currentNode.children.add(node);
-						currentNode = getLast(currentNode.children);
-					}
-				}
-			}
-			
-			if(event instanceof EnterVirtualEvent) {
-				EnterVirtualEvent enterVirtualEvent = ((EnterVirtualEvent) event);
-				CallStackNode node = new CallStackNode();
-				node.methodIndex = enterVirtualEvent.methodIndex;
-				node.parentNode = currentNode;
-				node.methodName = enterVirtualEvent.name;
-				node.descriptor = enterVirtualEvent.descriptor;
-				node.className = enterVirtualEvent.className;
-				node.arguments = Arrays.asList(enterVirtualEvent.args);
+				node.methodName = enterMethodEvent.name;
+				node.descriptor = enterMethodEvent.descriptor;
+				node.className = enterMethodEvent.className;
+				node.arguments = Arrays.asList(enterMethodEvent.args);
 				if(currentNode == null) {
 					nodes.add(node);
 					currentNode = node;
@@ -202,11 +179,9 @@ public class EventLog {
 				}
 			}
 			
-			/*
 			if(event instanceof InvokeSpecialMethodEvent) {
 				InvokeSpecialMethodEvent invokeSpecialMethodEvent = ((InvokeSpecialMethodEvent) event);
 				CallStackNode node = new CallStackNode();
-				System.out.println("INVOKE SPECIAL: " + invokeSpecialMethodEvent.className + ", " + invokeSpecialMethodEvent.descriptor + ", " + invokeSpecialMethodEvent.name);
 				node.methodIndex = -1;
 				node.parentNode = currentNode;
 				node.methodName = invokeSpecialMethodEvent.name;
@@ -221,7 +196,6 @@ public class EventLog {
 					currentNode = getLast(currentNode.children);
 				}
 			}
-			*/
 			
 			if(event instanceof ReturnedValueEvent) {
 				ReturnedValueEvent returnedValueEvent = ((ReturnedValueEvent) event);

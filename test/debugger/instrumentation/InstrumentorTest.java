@@ -400,17 +400,19 @@ public class InstrumentorTest {
 	@Test
 	public void enter() {
 		new TestMethodsClass().intParameterMethod(3, 4);
-		assertLog(Arrays.asList("ENTER:"), Arrays.asList(
-			"ENTER: TestMethodsClass-1, <init>, ()V, []",
-			"ENTER: TestMethodsClass-1, intParameterMethod, (II)I, [3, 4]"
+		assertLog(Arrays.asList("ENTER METHOD:", "SETTHIS:"), Arrays.asList(
+			"ENTER METHOD: debugger/instrumentation/InstrumentorTest$TestMethodsClass, <init>, ()V, []",
+			"SETTHIS: TestMethodsClass-1",
+			"ENTER METHOD: debugger/instrumentation/InstrumentorTest$TestMethodsClass, intParameterMethod, (II)I, [3, 4]",
+			"SETTHIS: TestMethodsClass-1"
 		));
 	}
 	
 	@Test
 	public void enterStatic() {
 		TestMethodsClass.staticIntParameterMethod(3, 4);
-		assertLog(Arrays.asList("ENTER STATIC:"), Arrays.asList(
-			"ENTER STATIC: debugger/instrumentation/InstrumentorTest$TestMethodsClass, staticIntParameterMethod, (II)I, [3, 4]"
+		assertLog(Arrays.asList("ENTER METHOD:"), Arrays.asList(
+			"ENTER METHOD: debugger/instrumentation/InstrumentorTest$TestMethodsClass, staticIntParameterMethod, (II)I, [3, 4]"
 		));
 	}
 	

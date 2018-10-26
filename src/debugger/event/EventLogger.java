@@ -70,12 +70,12 @@ public class EventLogger {
 		events.add(new Events.CatchExceptionEvent(t, thread, methodIndex));
 	}
 
-	public static void enterVirtual(Object object, String className, String methodName, String descriptor, Object[] args, Thread thread, int methodIndex) {
-		events.add(new Events.EnterVirtualEvent(object, className, methodName, descriptor, args, thread, methodIndex));
+	public static void setThis(Object object, Thread thread, int methodIndex) {
+		events.add(new Events.SetThisEvent(object, thread, methodIndex));
 	}
 	
-	public static void enterStatic(String className, String methodName, String descriptor, Object[] args, Thread thread, int methodIndex) {
-		events.add(new Events.EnterStaticEvent(className, methodName, descriptor, args, thread, methodIndex));
+	public static void enterMethod(String className, String methodName, String descriptor, Object[] args, Thread thread, int methodIndex) {
+		events.add(new Events.EnterMethodEvent(className, methodName, descriptor, args, thread, methodIndex));
 	}
 	
 	public static void exitWithException(Throwable t, Thread thread, int methodIndex) {
