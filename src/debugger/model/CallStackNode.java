@@ -82,8 +82,9 @@ public class CallStackNode {
 		return children;
 	}
 	
-	public void addChild(CallStackNode node) {
+	public CallStackNode addChild(CallStackNode node) {
 		children.add(node);
+		return node;
 	}
 	
 	public boolean isInstrumented() {

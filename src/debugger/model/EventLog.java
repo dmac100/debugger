@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import debugger.event.Events.EnterMethodEvent;
@@ -31,9 +32,9 @@ public class EventLog {
 	}
 
 	public List<CallStackNode> getCallStack() {
-		List<CallStackNode> nodes = new ArrayList<>();
+		CallStackNode rootNode = new CallStackNode();
 		
-		CallStackNode currentNode = null;
+		CallStackNode currentNode = rootNode;
 		
 		for(Event event:events) {
 			if(event instanceof EnterMethodEvent) {
@@ -45,16 +46,11 @@ public class EventLog {
 				node.setDescriptor(enterMethodEvent.descriptor);
 				node.setClassName(enterMethodEvent.className);
 				node.setArguments(Arrays.asList(enterMethodEvent.args));
-				if(currentNode == null) {
-					nodes.add(node);
-					currentNode = node;
+				
+				if(sameMethod(currentNode, node)) {
+					currentNode.setMethodIndex(node.getMethodIndex());
 				} else {
-					if(sameMethod(currentNode, node)) {
-						currentNode.setMethodIndex(node.getMethodIndex());
-					} else {
-						currentNode.addChild(node);
-						currentNode = node;
-					}
+					currentNode = currentNode.addChild(node);
 				}
 			}
 			
@@ -89,13 +85,7 @@ public class EventLog {
 				node.setDescriptor(invokeStaticMethodEvent.descriptor);
 				node.setClassName(invokeStaticMethodEvent.className);
 				node.setArguments(Arrays.asList(invokeStaticMethodEvent.args));
-				if(currentNode == null) {
-					nodes.add(node);
-					currentNode = node;
-				} else {
-					currentNode.addChild(node);
-					currentNode = node;
-				}
+				currentNode = currentNode.addChild(node);
 			}
 			
 			if(event instanceof InvokeMethodEvent) {
@@ -107,13 +97,7 @@ public class EventLog {
 				node.setDescriptor(invokeMethodEvent.descriptor);
 				node.setClassName(invokeMethodEvent.object.getClass().getName().replace('.', '/'));
 				node.setArguments(Arrays.asList(invokeMethodEvent.args));
-				if(currentNode == null) {
-					nodes.add(node);
-					currentNode = node;
-				} else {
-					currentNode.addChild(node);
-					currentNode = node;
-				}
+				currentNode = currentNode.addChild(node);
 			}
 			
 			if(event instanceof InvokeSpecialMethodEvent) {
@@ -125,13 +109,7 @@ public class EventLog {
 				node.setDescriptor(invokeSpecialMethodEvent.descriptor);
 				node.setClassName(invokeSpecialMethodEvent.className);
 				node.setArguments(Arrays.asList(invokeSpecialMethodEvent.args));
-				if(currentNode == null) {
-					nodes.add(node);
-					currentNode = node;
-				} else {
-					currentNode.addChild(node);
-					currentNode = node;
-				}
+				currentNode = currentNode.addChild(node);
 			}
 			
 			if(event instanceof ReturnedValueEvent) {
@@ -143,13 +121,13 @@ public class EventLog {
 			}
 		}
 		
-		return nodes;
+		return rootNode.getChildren();
 	}
 
 	private static boolean sameMethod(CallStackNode node1, CallStackNode node2) {
-		if(!node1.getMethodName().equals(node2.getMethodName())) return false;
-		if(!node1.getClassName().equals(node2.getClassName())) return false;
-		if(!node1.getDescriptor().equals(node2.getDescriptor())) return false;
+		if(!Objects.equals(node1.getMethodName(), node2.getMethodName())) return false;
+		if(!Objects.equals(node1.getClassName(), node2.getClassName())) return false;
+		if(!Objects.equals(node1.getDescriptor(), node2.getDescriptor())) return false;
 		return true;
 	}
 }
