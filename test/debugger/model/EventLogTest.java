@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import debugger.event.EventLogger;
 import debugger.instrumentation.Instrumentor;
-import debugger.model.EventLog.CallStackNode;
 
 class InstrumentedClass {
 	NonInstrumentedClass nonInstrumentedClass = new NonInstrumentedClass();
