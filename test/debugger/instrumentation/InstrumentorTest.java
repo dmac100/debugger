@@ -368,8 +368,8 @@ public class InstrumentorTest {
 	public void invokeConstructor() {
 		new TestMethodsClass().callConstructor();
 		assertLog(Arrays.asList("INVOKE SPECIAL:"), Arrays.asList(
-			"INVOKE SPECIAL: String-1, <init>, ()V, []",
-			"INVOKE SPECIAL: String-2, <init>, (Ljava/lang/String;)V, [abc]"
+			"INVOKE SPECIAL: java/lang/Object, <init>, ()V, []",
+			"INVOKE SPECIAL: java/lang/String, <init>, (Ljava/lang/String;)V, [abc]"
 		));
 	}
 	

@@ -87,7 +87,7 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		if(isStatic) {
 			invokeEventLogger("invokeStaticMethod", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		} else if(isSpecial) {
-			invokeEventLogger("invokeSpecialMethod", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
+			invokeEventLogger("invokeSpecialMethod", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		} else {
 			invokeEventLogger("invokeMethod", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		}
@@ -319,12 +319,13 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 	public void onEnter() {
 		if((access & Opcodes.ACC_STATIC) == 0) {
 			loadThis();
+			push(className);
 			push(methodName);
 			push(descriptor);
 			loadArgArray();
 			loadCurrentThread();
 			loadLocal(methodIndexVar);
-			invokeEventLogger("enterVirtual", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
+			invokeEventLogger("enterVirtual", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		} else {
 			push(className);
 			push(methodName);

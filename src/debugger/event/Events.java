@@ -13,7 +13,7 @@ public class Events {
 		classes.clear();
 	}
 	
-	private static String getObjectName(Object object) {
+	public static String getObjectName(Object object) {
 		if(object == null) {
 			return "null";
 		}
@@ -113,21 +113,21 @@ public class Events {
 	}
 	
 	public static class InvokeSpecialMethodEvent extends Event {
-		public final Object object;
+		public final String className;
 		public final String name;
 		public final String descriptor;
 		public final Object[] args;
 		
-		public InvokeSpecialMethodEvent(Object object, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
+		public InvokeSpecialMethodEvent(String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
 			super(thread, methodIndex);
-			this.object = object;
+			this.className = className;
 			this.name = name;
 			this.descriptor = descriptor;
 			this.args = args;
 		}
 		
 		public String toString() {
-			return "INVOKE SPECIAL: " + getObjectName(object) + ", " + name + ", " + descriptor + ", " + Arrays.toString(args);
+			return "INVOKE SPECIAL: " + className + ", " + name + ", " + descriptor + ", " + Arrays.toString(args);
 		}
 	}
 	
@@ -204,13 +204,15 @@ public class Events {
 	
 	public static class EnterVirtualEvent extends Event {
 		public final Object object;
+		public final String className;
 		public final String name;
 		public final String descriptor;
 		public final Object[] args;
 
-		public EnterVirtualEvent(Object object, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
+		public EnterVirtualEvent(Object object, String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
 			super(thread, methodIndex);
 			this.object = object;
+			this.className = className;
 			this.name = name;
 			this.descriptor = descriptor;
 			this.args = args;
