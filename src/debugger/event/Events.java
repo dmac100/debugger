@@ -113,13 +113,15 @@ public class Events {
 	}
 	
 	public static class InvokeSpecialMethodEvent extends Event {
+		public final Object object;
 		public final String className;
 		public final String name;
 		public final String descriptor;
 		public final Object[] args;
 		
-		public InvokeSpecialMethodEvent(String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
+		public InvokeSpecialMethodEvent(Object object, String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
 			super(thread, methodIndex);
+			this.object = object;
 			this.className = className;
 			this.name = name;
 			this.descriptor = descriptor;
@@ -127,7 +129,7 @@ public class Events {
 		}
 		
 		public String toString() {
-			return "INVOKE SPECIAL: " + className + ", " + name + ", " + descriptor + ", " + Arrays.toString(args);
+			return "INVOKE SPECIAL: " + getObjectName(object) + ", " + className + ", " + name + ", " + descriptor + ", " + Arrays.toString(args);
 		}
 	}
 	

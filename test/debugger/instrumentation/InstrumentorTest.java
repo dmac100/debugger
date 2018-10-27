@@ -30,7 +30,13 @@ public class InstrumentorTest {
 		public int interfaceMethod(int x);
 	}
 	
-	public static class TestMethodsClass implements TestInterface {
+	public static class TestMethodsSuperClass {
+		public int superMethod() {
+			return 3;
+		}
+	}
+	
+	public static class TestMethodsClass extends TestMethodsSuperClass implements TestInterface {
 		public void localVariableTypes() {
 			boolean a = true;
 			byte b = 1;
@@ -161,6 +167,10 @@ public class InstrumentorTest {
 		
 		public int interfaceMethod(int x) {
 			return 3;
+		}
+
+		public int callSuperMethod() {
+			return super.superMethod();
 		}
 	}
 	
@@ -380,8 +390,17 @@ public class InstrumentorTest {
 	public void invokeConstructor() {
 		new TestMethodsClass().callConstructor();
 		assertLog(Arrays.asList("INVOKE SPECIAL:"), Arrays.asList(
-			"INVOKE SPECIAL: java/lang/Object, <init>, ()V, []",
-			"INVOKE SPECIAL: java/lang/String, <init>, (Ljava/lang/String;)V, [abc]"
+			"INVOKE SPECIAL: null, debugger/instrumentation/InstrumentorTest$TestMethodsSuperClass, <init>, ()V, []",
+			"INVOKE SPECIAL: null, java/lang/String, <init>, (Ljava/lang/String;)V, [abc]"
+		));
+	}
+	
+	@Test
+	public void invokeSuperMethod() {
+		new TestMethodsClass().callSuperMethod();
+		assertLog(Arrays.asList("INVOKE SPECIAL:"), Arrays.asList(
+			"INVOKE SPECIAL: null, debugger/instrumentation/InstrumentorTest$TestMethodsSuperClass, <init>, ()V, []",
+			"INVOKE SPECIAL: TestMethodsClass-1, debugger/instrumentation/InstrumentorTest$TestMethodsSuperClass, superMethod, ()I, []"
 		));
 	}
 	

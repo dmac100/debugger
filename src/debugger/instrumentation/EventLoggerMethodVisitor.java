@@ -81,7 +81,19 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 	private void visitInvokeMethod(String owner, String name, String descriptor, Type[] argTypes, boolean isStatic, boolean isSpecial) {
 		List<Integer> locals = createArrayFromArgs(argTypes);
 		
-		if(isStatic || isSpecial) {
+		if(isSpecial) {
+			if(name.equals("<init>")) {
+				visitInsn(Opcodes.ACONST_NULL);
+				swap();
+			} else {
+				swap();
+				dupX1();
+				swap();
+			}
+			
+			push(owner);
+			swap();
+		} else if(isStatic) {
 			push(owner);
 			swap();
 		} else {
@@ -92,6 +104,7 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 
 		push(name);
 		swap();
+		
 		push(descriptor);
 		swap();
 
@@ -101,7 +114,7 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		if(isStatic) {
 			invokeEventLogger("invokeStaticMethod", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		} else if(isSpecial) {
-			invokeEventLogger("invokeSpecialMethod", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
+			invokeEventLogger("invokeSpecialMethod", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		} else {
 			invokeEventLogger("invokeMethod", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Thread;I)V");
 		}
