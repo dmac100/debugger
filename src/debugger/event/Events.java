@@ -27,12 +27,18 @@ public class Events {
 	}
 	
 	public static abstract class Event {
-		public Thread thread;
+		public final int lineNumber;
+		public final Thread thread;
 		public final int methodIndex;
 		
-		public Event(Thread thread, int methodIndex) {
+		public Event(int lineNumber, Thread thread, int methodIndex) {
+			this.lineNumber = lineNumber;
 			this.thread = thread;
 			this.methodIndex = methodIndex;
+		}
+		
+		public int getLineNumber() {
+			return lineNumber;
 		}
 		
 		public Thread getThread() {
@@ -49,8 +55,8 @@ public class Events {
 		public final String name;
 		public final Object value;
 		
-		public PutFieldEvent(Object object, String name, Object value, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public PutFieldEvent(Object object, String name, Object value, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.object = object;
 			this.name = name;
 			this.value = value;
@@ -65,8 +71,8 @@ public class Events {
 		public final int varIndex;
 		public final Object value;
 		
-		public StoreEvent(int varIndex, Object value, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public StoreEvent(int varIndex, Object value, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.varIndex = varIndex;
 			this.value = value;
 		}
@@ -81,8 +87,8 @@ public class Events {
 		public final int index;
 		public final Object value;
 		
-		public StoreArrayEvent(Object array, int index, Object value, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public StoreArrayEvent(Object array, int index, Object value, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.array = array;
 			this.index = index;
 			this.value = value;
@@ -99,8 +105,8 @@ public class Events {
 		public final String descriptor;
 		public final Object[] args;
 		
-		public InvokeMethodEvent(Object object, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public InvokeMethodEvent(Object object, String name, String descriptor, Object[] args, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.object = object;
 			this.name = name;
 			this.descriptor = descriptor;
@@ -119,8 +125,8 @@ public class Events {
 		public final String descriptor;
 		public final Object[] args;
 		
-		public InvokeSpecialMethodEvent(Object object, String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public InvokeSpecialMethodEvent(Object object, String className, String name, String descriptor, Object[] args, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.object = object;
 			this.className = className;
 			this.name = name;
@@ -139,8 +145,8 @@ public class Events {
 		public final String descriptor;
 		public final Object[] args;
 		
-		public InvokeStaticMethodEvent(String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public InvokeStaticMethodEvent(String className, String name, String descriptor, Object[] args, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.className = className;
 			this.name = name;
 			this.descriptor = descriptor;
@@ -155,8 +161,8 @@ public class Events {
 	public static class ReturnValueEvent extends Event {
 		public final Object value;
 		
-		public ReturnValueEvent(Object value, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public ReturnValueEvent(Object value, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.value = value;
 		}
 		
@@ -168,8 +174,8 @@ public class Events {
 	public static class ReturnedValueEvent extends Event {
 		public final Object value;
 		
-		public ReturnedValueEvent(Object value, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public ReturnedValueEvent(Object value, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.value = value;
 		}
 		
@@ -181,8 +187,8 @@ public class Events {
 	public static class ThrowExceptionEvent extends Event {
 		public final Throwable throwable;
 		
-		public ThrowExceptionEvent(Throwable throwable, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public ThrowExceptionEvent(Throwable throwable, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.throwable = throwable;
 		}
 		
@@ -194,8 +200,8 @@ public class Events {
 	public static class CatchExceptionEvent extends Event {
 		public final Throwable throwable;
 		
-		public CatchExceptionEvent(Throwable throwable, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public CatchExceptionEvent(Throwable throwable, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.throwable = throwable;
 		}
 		
@@ -207,8 +213,8 @@ public class Events {
 	public static class SetThisEvent extends Event {
 		private final Object object;
 
-		public SetThisEvent(Object object, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public SetThisEvent(Object object, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.object = object;
 		}
 		
@@ -223,13 +229,12 @@ public class Events {
 		public final String descriptor;
 		public final Object[] args;
 
-		public EnterMethodEvent(String className, String name, String descriptor, Object[] args, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public EnterMethodEvent(String className, String name, String descriptor, Object[] args, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.className = className;
 			this.name = name;
 			this.descriptor = descriptor;
 			this.args = args;
-			this.thread = thread;
 		}
 		
 		public String toString() {
@@ -240,8 +245,8 @@ public class Events {
 	public static class ExitWithExceptionEvent extends Event {
 		public final Throwable throwable;
 		
-		public ExitWithExceptionEvent(Throwable throwable, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public ExitWithExceptionEvent(Throwable throwable, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.throwable = throwable;
 		}
 		
@@ -253,8 +258,8 @@ public class Events {
 	public static class ExitWithValueEvent extends Event {
 		public final Object value;
 		
-		public ExitWithValueEvent(Object value, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public ExitWithValueEvent(Object value, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.value = value;
 		}
 		
@@ -267,8 +272,8 @@ public class Events {
 		public final String name;
 		public final int index;
 
-		public SetLocalNameEvent(String name, int index, Thread thread, int methodIndex) {
-			super(thread, methodIndex);
+		public SetLocalNameEvent(String name, int index, int lineNumber, Thread thread, int methodIndex) {
+			super(lineNumber, thread, methodIndex);
 			this.name = name;
 			this.index = index;
 		}

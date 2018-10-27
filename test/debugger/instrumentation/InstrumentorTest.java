@@ -1,16 +1,19 @@
 package debugger.instrumentation;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import debugger.event.EventLogger;
+import debugger.event.Events.Event;
+import debugger.event.Events.ReturnValueEvent;
+import debugger.model.QuickSort;
 
 public class InstrumentorTest {
 	public static class InstanceVariablesClass {
@@ -179,6 +182,7 @@ public class InstrumentorTest {
 		EventLogger.clear();
 		new Instrumentor().instrumentClass(InstanceVariablesClass.class);
 		new Instrumentor().instrumentClass(TestMethodsClass.class);
+		new Instrumentor().instrumentClass(QuickSort.class);
 	}
 	
 	@Test
@@ -495,10 +499,23 @@ public class InstrumentorTest {
 			"SET LOCAL NAME: j, 12"
 		));
 	}
+	
+	@Test
+	public void lineNumbers() {
+		QuickSort.sort(Arrays.asList(1, 2, 3));
+		
+		List<Integer> lineNumbers = EventLogger.getEvents().stream()
+			.filter(e -> e instanceof ReturnValueEvent)
+			.map(Event::getLineNumber)
+			.distinct()
+			.collect(toList());
+		
+		assertEquals(Arrays.asList(9, 28), lineNumbers);
+	}
 
 	private void assertLog(List<String> filter, List<String> expectedLog) {
 		Predicate<String> lineBeginsWithFilter = line -> filter.stream().anyMatch(f -> line.startsWith(f));
-		List<String> filteredLog = EventLogger.getLog().stream().filter(lineBeginsWithFilter).collect(Collectors.toList());
+		List<String> filteredLog = EventLogger.getLog().stream().filter(lineBeginsWithFilter).collect(toList());
 		assertEquals(expectedLog, filteredLog);
 	}
 }

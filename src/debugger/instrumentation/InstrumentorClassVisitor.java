@@ -29,6 +29,8 @@ public class InstrumentorClassVisitor extends ClassVisitor {
 		
 		methodVisitor = new FinallyMethodVisitor(methodVisitor, access, name, descriptor, eventLoggerMethodVisitor);
 		
+		methodVisitor = new LineNumberMethodNode(methodVisitor, access, name, descriptor, signature, exceptions, eventLoggerMethodVisitor);
+		
 		return methodVisitor;
 	}
 }
