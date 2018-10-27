@@ -65,6 +65,9 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		case Opcodes.INVOKEVIRTUAL:
 			visitInvokeMethod(owner, name, descriptor, argTypes, false, false);
 			break;
+		case Opcodes.INVOKEINTERFACE:
+			visitInvokeMethod(owner, name, descriptor, argTypes, false, false);
+			break;
 		case Opcodes.INVOKESTATIC:
 			visitInvokeMethod(owner, name, descriptor, argTypes, true, false);
 			break;

@@ -130,6 +130,7 @@ public class EventLogTest {
 		
 		callStack = callStack
 			.replaceAll(".*<init>.*[\r\n?]", "")
+			.replaceAll(".*ArrayList.*[\r\n?]", "")
 			.replaceAll(".*Integer.valueOf.*[\r\n?]", "")
 			.replaceAll(".*Integer.intValue.*[\r\n?]", "");
 		

@@ -26,7 +26,11 @@ public class InstrumentorTest {
 		private Object[] j = null;
 	}
 
-	public static class TestMethodsClass {
+	public interface TestInterface {
+		public int interfaceMethod(int x);
+	}
+	
+	public static class TestMethodsClass implements TestInterface {
 		public void localVariableTypes() {
 			boolean a = true;
 			byte b = 1;
@@ -149,6 +153,14 @@ public class InstrumentorTest {
 		
 		public int throwUncaughtException() {
 			throw new RuntimeException("Test Exception");
+		}
+		
+		public int callInterfaceMethod() {
+			return ((TestInterface) this).interfaceMethod(2);
+		}
+		
+		public int interfaceMethod(int x) {
+			return 3;
 		}
 	}
 	
@@ -378,6 +390,14 @@ public class InstrumentorTest {
 		new TestMethodsClass().callParameterTypes();
 		assertLog(Arrays.asList("INVOKE:"), Arrays.asList(
 			"INVOKE: TestMethodsClass-1, parameterTypes, (ZBCSIJFDLjava/lang/Object;[Ljava/lang/Object;)I, [true, 1, 2, 3, 4, 5, 6.0, 7.0, null, null]"
+		));
+	}
+	
+	@Test
+	public void invokeInterfaceMethod() {
+		new TestMethodsClass().callInterfaceMethod();
+		assertLog(Arrays.asList("INVOKE:"), Arrays.asList(
+			"INVOKE: TestMethodsClass-1, interfaceMethod, (I)I, [2]"
 		));
 	}
 	
