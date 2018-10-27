@@ -70,11 +70,33 @@ class InstrumentedClass {
 		}
 		return 1;
 	}
+	
+	public int callOverloadedMethod() {
+		return overloadedMethod();
+	}
+
+	public int overloadedMethod() {
+		return 2;
+	}
 }
 
 class InstrumentedSubclass extends InstrumentedClass {
 	public InstrumentedSubclass() {
 		super(1);
+	}
+	
+	public int overloadedMethod() {
+		return 3;
+	}
+}
+
+class NonInstrumentedSubclass extends InstrumentedClass {
+	public NonInstrumentedSubclass() {
+		super(1);
+	}
+	
+	public int overloadedMethod() {
+		return 3;
 	}
 }
 
@@ -223,6 +245,21 @@ public class EventLogTest {
 		
 		String expectedCallStack = "debugger/model/InstrumentedClass.throwException4([]) - 1\n";
 		expectedCallStack += "  debugger/model/NonInstrumentedClass.throwException5([]) - null\n";
+		
+		assertEquals(expectedCallStack, callStack);
+	}
+	
+	@Test
+	public void getCallStack_withOverloadedMethods() {
+		new InstrumentedSubclass().callOverloadedMethod();
+		
+		eventLog = new EventLog(EventLogger.getEvents());
+		
+		String callStack = printCallStack(eventLog.getCallStack(getThread()))
+			.replaceAll(".*<init>.*[\r\n?]", "");
+		
+		String expectedCallStack = "debugger/model/InstrumentedClass.callOverloadedMethod([]) - 3\n";
+		expectedCallStack += "  debugger/model/InstrumentedSubclass.overloadedMethod([]) - 3\n";
 		
 		assertEquals(expectedCallStack, callStack);
 	}
