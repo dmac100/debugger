@@ -3,6 +3,7 @@ package debugger.model;
 import static debugger.util.CollectionUtil.getLast;
 import static debugger.util.CollectionUtil.lastIndexOf;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -27,9 +28,22 @@ import debugger.event.Events.StoreEvent;
 
 public class EventLog {
 	private final List<Event> events;
+	private final List<Runnable> changeCallbacks = new ArrayList<>();
+	
+	private File sourceFile;
 	
 	public EventLog(List<Event> events) {
 		this.events = events;
+	}
+	
+	public Runnable addChangeCallback(Runnable callback) {
+		changeCallbacks.add(callback);
+		callback.run();
+		return () -> changeCallbacks.remove(callback);
+	}
+	
+	private void fireChangeCallbacks() {
+		new ArrayList<>(changeCallbacks).forEach(Runnable::run);
 	}
 	
 	public List<Thread> getThreads() {
@@ -189,5 +203,13 @@ public class EventLog {
 
 	public int getLastIndex(Thread thread) {
 		return lastIndexOf(events, e -> e.thread == thread && e instanceof ReturnValueEvent);
+	}
+
+	public void setSourceFile(File file) {
+		this.sourceFile = file;
+	}
+	
+	public File getSourceFile() {
+		return sourceFile;
 	}
 }

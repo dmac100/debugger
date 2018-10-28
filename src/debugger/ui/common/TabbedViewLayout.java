@@ -65,8 +65,8 @@ public class TabbedViewLayout {
 			leftFolder.setSelection(0);
 		}
 		
-		bottomFolder = split(leftFolder, 0, 1, 60);
-		rightFolder = split(leftFolder, 1, 0, 60);
+		bottomFolder = split(leftFolder, 0, 1, 70);
+		rightFolder = split(leftFolder, 1, 0, 30);
 	}
 	
 	public void removeEmptyFolders() {
