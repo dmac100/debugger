@@ -4,13 +4,16 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import debugger.event.Events.Event;
 
 public class EventLogger {
-	private static int methodIndex = 0;
+	private static final AtomicInteger methodIndex = new AtomicInteger();
 	
-	private static List<Event> events = new ArrayList<>();
+	private static final Queue<Event> events = new ConcurrentLinkedQueue<>();
 	
 	public static List<String> getLog() {
 		return events.stream().map(Event::toString).collect(toList());
@@ -23,11 +26,11 @@ public class EventLogger {
 	public static void clear() {
 		Events.clear();
 		events.clear();
-		methodIndex = 0;
+		methodIndex.set(0);
 	}
 	
 	public static int nextMethodIndex() {
-		return methodIndex++;
+		return methodIndex.incrementAndGet();
 	}
 
 	public static void putField(Object object, String name, Object value, int lineNumber, Thread thread, int methodIndex) {
