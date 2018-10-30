@@ -95,11 +95,10 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		
 		if(isStatic) {
 			loadCommonInvokeMethodArgs(owner, argLocal, name, descriptor);
-			
 			invokeEventLogger("invokeStaticMethod", "(Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Thread;I)V");
 		} else if(isSpecial) {
 			if(name.equals("<init>")) {
-				visitInsn(Opcodes.ACONST_NULL);
+				super.visitInsn(Opcodes.ACONST_NULL);
 			} else {
 				loadLocal(objectLocal);
 			}
@@ -109,6 +108,7 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		} else {
 			loadLocal(objectLocal);
 			loadCommonInvokeMethodArgs(owner, argLocal, name, descriptor);
+			
 			invokeEventLogger("invokeMethod", "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Thread;I)V");
 		}
 		
@@ -134,7 +134,7 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 	private void visitMethodReturned(String descriptor) {
 		Type returnType = Type.getReturnType(descriptor);
 		if(returnType == Type.VOID_TYPE) {
-			visitInsn(Opcodes.ACONST_NULL);
+			super.visitInsn(Opcodes.ACONST_NULL);
 			loadLineNumber();
 			loadCurrentThread();
 			loadLocal(methodIndexVar);
@@ -170,7 +170,7 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 			Type type = argTypes[i];
 			loadLocal(locals.get(i));
 			box(type);
-			visitInsn(Opcodes.AASTORE);
+			super.visitInsn(Opcodes.AASTORE);
 		}
 
 		return locals;
@@ -315,7 +315,7 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		super.visitIincInsn(var, increment);
 
 		push(var);
-		visitVarInsn(Opcodes.ILOAD, var);
+		super.visitVarInsn(Opcodes.ILOAD, var);
 		box(Type.INT_TYPE);
 
 		loadLineNumber();
