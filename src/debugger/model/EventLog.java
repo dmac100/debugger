@@ -32,6 +32,9 @@ public class EventLog {
 	
 	private File sourceFile;
 	
+	private int currentIndex;
+	private Thread currentThread;
+	
 	public EventLog(List<Event> events) {
 		this.events = events;
 	}
@@ -54,13 +57,13 @@ public class EventLog {
 			.collect(Collectors.toList());
 	}
 
-	public List<CallStackNode> getCallStack(Thread thread) {
+	public List<CallStackNode> getCallStack() {
 		CallStackNode rootNode = new CallStackNode();
 		
 		CallStackNode currentNode = rootNode;
 		
 		for(Event event:events) {
-			if(event.thread != thread) {
+			if(event.thread != currentThread) {
 				continue;
 			}
 			
@@ -158,14 +161,14 @@ public class EventLog {
 		return true;
 	}
 
-	public Map<String, Object> getLocalVariablesAt(Thread thread, int index) {
+	public Map<String, Object> getLocalVariables() {
 		List<Map<Integer, Object>> localsStack = new ArrayList<>();
 		List<Map<Integer, String>> localsNameStack = new ArrayList<>();
 		
-		for(int i = 0; i < index; i++) {
+		for(int i = 0; i < currentIndex; i++) {
 			Event event = events.get(i);
 			
-			if(event.thread != thread) {
+			if(event.thread != currentThread) {
 				continue;
 			}
 			
@@ -205,6 +208,14 @@ public class EventLog {
 		return lastIndexOf(events, e -> e.thread == thread && e instanceof ReturnValueEvent);
 	}
 
+	public void setIndex(int index) {
+		this.currentIndex = index;
+	}
+	
+	public void setThread(Thread thread) {
+		this.currentThread = thread;
+	}
+	
 	public void setSourceFile(File file) {
 		this.sourceFile = file;
 	}
