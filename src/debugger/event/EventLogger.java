@@ -45,15 +45,15 @@ public class EventLogger {
 		events.add(new Events.StoreArrayEvent(array, index, value, lineNumber, thread, methodIndex));
 	}
 
-	public static void invokeMethod(Object object, String name, String descriptor, Object[] args, int lineNumber, Thread thread, int methodIndex) {
+	public static void invokeMethod(Object object, String className, Object[] args, String name, String descriptor, int lineNumber, Thread thread, int methodIndex) {
 		events.add(new Events.InvokeMethodEvent(object, name, descriptor, args, lineNumber, thread, methodIndex));
 	}
 	
-	public static void invokeSpecialMethod(Object object, String className, String name, String descriptor, Object[] args, int lineNumber, Thread thread, int methodIndex) {
+	public static void invokeSpecialMethod(Object object, String className, Object[] args, String name, String descriptor, int lineNumber, Thread thread, int methodIndex) {
 		events.add(new Events.InvokeSpecialMethodEvent(object, className, name, descriptor, args, lineNumber, thread, methodIndex));
 	}
 	
-	public static void invokeStaticMethod(String className, String name, String descriptor, Object[] args, int lineNumber, Thread thread, int methodIndex) {
+	public static void invokeStaticMethod(String className, Object[] args, String name, String descriptor, int lineNumber, Thread thread, int methodIndex) {
 		events.add(new Events.InvokeStaticMethodEvent(className, name, descriptor, args, lineNumber, thread, methodIndex));
 	}
 	
