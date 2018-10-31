@@ -1,5 +1,8 @@
 package debugger.instrumentation.util;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -167,6 +170,17 @@ public class AsmUtil {
 	
 	public static String getAsmClassName(Class<?> clazz) {
 		return clazz.getCanonicalName().replace(".", "/");
+	}
+	
+	public static Method getMethod(Class<?> clazz, String name, String descriptor) {
+		for(Method method:clazz.getMethods()) {
+			if(method.getName().equals(name)) {
+				if((Arrays.toString(Type.getArgumentTypes(method))).equals(Arrays.toString(Type.getArgumentTypes(descriptor)))) {
+					return method;
+				}
+			}
+		}
+		return null;
 	}
 	
 	public static Type getOperandType(int opcode) {

@@ -2,7 +2,9 @@ package debugger.model;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +14,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import debugger.event.EventLogger;
+import debugger.event.SnapshotCreator;
 import debugger.instrumentation.Instrumentor;
+import debugger.instrumentation.util.AsmUtil;
 
 class InstrumentedClass {
 	NonInstrumentedClass nonInstrumentedClass = new NonInstrumentedClass();
@@ -114,6 +118,39 @@ class NonInstrumentedClass {
 	}
 }
 
+class ArrayListClass {
+	public static void f1(List<Integer> list) {
+		list.add(1);
+		list.clear();
+		list.add(3);
+		list.add(0, 2);
+		list.add(0, 1);
+		list.remove(0);
+		list.set(0, 3);
+		list.add(4);
+		list.add(5);
+		list.retainAll(Arrays.asList(3, 4));
+	}
+	
+	public static void f2(List<Integer> list) {
+		list.add(3);
+		list.add(2);
+		list.add(1);
+		Collections.sort(list);
+	}
+	
+	public static void f3(List<Integer> list) {
+		List<Integer> otherList = new ArrayList<>();
+		list.add(3);
+		list.add(2);
+		list.add(1);
+		otherList.add(4);
+		otherList.add(5);
+		otherList.add(6);
+		Collections.sort(otherList);
+	}
+}
+
 public class EventLogTest {
 	private EventLog eventLog;
 	
@@ -122,6 +159,7 @@ public class EventLogTest {
 		new Instrumentor().instrumentClass(QuickSort.class);
 		new Instrumentor().instrumentClass(InstrumentedClass.class);
 		new Instrumentor().instrumentClass(InstrumentedSubclass.class);
+		new Instrumentor().instrumentClass(ArrayListClass.class);
 	}
 	
 	@After
@@ -308,5 +346,71 @@ public class EventLogTest {
 			"right", "[7, 5, 9, 8, 7]",
 			"result", "[1, 2, 3, 5, 5, 7, 7, 8, 9]"
 		), locals);
+	}
+	
+	@Test
+	public void getArrayListSnapshot() {
+		List<Integer> arrayList = new ArrayList<>();
+		
+		ArrayListClass.f1(arrayList);
+		eventLog = new EventLog(EventLogger.getEvents());
+		eventLog.setThread(getThread());
+		eventLog.setIndex(eventLog.getLastIndex(getThread()));
+		arrayList.clear();
+		
+		assertEquals(Arrays.asList(3, 3, 4), eventLog.getObjectSnapshot(arrayList, eventLog.getEvents()).get());
+	}
+	
+	@Test
+	public void getArrayListSnapshot_collectionsMethod() {
+		List<Integer> arrayList = new ArrayList<>();
+		
+		ArrayListClass.f2(arrayList);
+		eventLog = new EventLog(EventLogger.getEvents());
+		eventLog.setThread(getThread());
+		eventLog.setIndex(eventLog.getLastIndex(getThread()));
+		arrayList.clear();
+		
+		assertEquals(Arrays.asList(1, 2, 3), eventLog.getObjectSnapshot(arrayList, eventLog.getEvents()).get());
+	}
+	
+	@Test
+	public void getArrayListSnapshot_withOtherList() {
+		List<Integer> arrayList = new ArrayList<>();
+		
+		ArrayListClass.f3(arrayList);
+		eventLog = new EventLog(EventLogger.getEvents());
+		eventLog.setThread(getThread());
+		eventLog.setIndex(eventLog.getLastIndex(getThread()));
+		arrayList.clear();
+		
+		assertEquals(Arrays.asList(3, 2, 1), eventLog.getObjectSnapshot(arrayList, eventLog.getEvents()).get());
+	}
+	
+	@Test
+	public void getArrayListSnapshot_withInitialValues() {
+		List<Integer> arrayList = new ArrayList<>(List.of(4, 5, 6));
+		
+		ArrayListClass.f3(arrayList);
+		eventLog = new EventLog(EventLogger.getEvents());
+		eventLog.setThread(getThread());
+		eventLog.setIndex(eventLog.getLastIndex(getThread()));
+		arrayList.clear();
+		
+		assertEquals(Arrays.asList(4, 5, 6, 3, 2, 1), eventLog.getObjectSnapshot(arrayList, eventLog.getEvents()).get());
+	}
+	
+	@Test
+	public void validForwardedMethods() {
+		for(SnapshotCreator snapshotCreator:EventLogger.snapshotCreators) {
+			for(String method:snapshotCreator.getForwardedMethods()) {
+				String name = method.replaceAll("\\(.*", "");
+				String descriptor = method.replaceAll(".*?\\(", "(");
+				
+				if(AsmUtil.getMethod(snapshotCreator.createObject().getClass(), name, descriptor) == null) {
+					throw new AssertionError("Invalid method: " + method);
+				}
+			}
+		}
 	}
 }

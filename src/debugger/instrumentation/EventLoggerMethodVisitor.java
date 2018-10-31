@@ -60,29 +60,11 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+		boolean isStatic = (opcode == Opcodes.INVOKESTATIC);
+		boolean isSpecial = (opcode == Opcodes.INVOKESPECIAL);
+		
 		Type[] argTypes = Type.getArgumentTypes(descriptor);
 		
-		switch(opcode) {
-		case Opcodes.INVOKESPECIAL:
-			visitInvokeMethod(owner, name, descriptor, argTypes, false, true);
-			break;
-		case Opcodes.INVOKEVIRTUAL:
-			visitInvokeMethod(owner, name, descriptor, argTypes, false, false);
-			break;
-		case Opcodes.INVOKEINTERFACE:
-			visitInvokeMethod(owner, name, descriptor, argTypes, false, false);
-			break;
-		case Opcodes.INVOKESTATIC:
-			visitInvokeMethod(owner, name, descriptor, argTypes, true, false);
-			break;
-		}
-
-		super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-
-		visitMethodReturned(descriptor);
-	}
-
-	private void visitInvokeMethod(String owner, String name, String descriptor, Type[] argTypes, boolean isStatic, boolean isSpecial) {
 		List<Integer> locals = createArrayFromArgs(argTypes);
 		
 		int objectLocal = newLocal(Type.getType(Object.class));
@@ -93,24 +75,7 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 			storeLocal(objectLocal);
 		}
 		
-		if(isStatic) {
-			loadCommonInvokeMethodArgs(owner, argLocal, name, descriptor);
-			invokeEventLogger("invokeStaticMethod", "(Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Thread;I)V");
-		} else if(isSpecial) {
-			if(name.equals("<init>")) {
-				super.visitInsn(Opcodes.ACONST_NULL);
-			} else {
-				loadLocal(objectLocal);
-			}
-			
-			loadCommonInvokeMethodArgs(owner, argLocal, name, descriptor);
-			invokeEventLogger("invokeSpecialMethod", "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Thread;I)V");
-		} else {
-			loadLocal(objectLocal);
-			loadCommonInvokeMethodArgs(owner, argLocal, name, descriptor);
-			
-			invokeEventLogger("invokeMethod", "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Thread;I)V");
-		}
+		invokeMethodEventLogger("", isStatic, isSpecial, owner, objectLocal, argLocal, name, descriptor);
 		
 		if(!isStatic) {
 			loadLocal(objectLocal);
@@ -119,17 +84,37 @@ public class EventLoggerMethodVisitor extends GeneratorAdapter implements Method
 		for(int i = 0; i < locals.size(); i++) {
 			loadLocal(locals.get(i));
 		}
+
+		super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+		
+		invokeMethodEventLogger("After", isStatic, isSpecial, owner, objectLocal, argLocal, name, descriptor);
+
+		visitMethodReturned(descriptor);
 	}
 
-	private void loadCommonInvokeMethodArgs(String owner, int argLocal, String name, String descriptor) {
-		push(owner);
-		loadLocal(argLocal);
-		push(name);
-		push(descriptor);
-		loadLineNumber();
-		loadCurrentThread();
-		loadLocal(methodIndexVar);
-	}
+	private void invokeMethodEventLogger(String suffix, boolean isStatic, boolean isSpecial, String owner, int objectLocal, int argLocal, String name, String descriptor) {
+		if(isSpecial && name.equals("<init>")) {
+			super.visitInsn(Opcodes.ACONST_NULL);
+		} else if(!isStatic) {
+			loadLocal(objectLocal);
+		}
+		
+ 		push(owner);
+ 		loadLocal(argLocal);
+ 		push(name);
+ 		push(descriptor);
+ 		loadLineNumber();
+ 		loadCurrentThread();
+ 		loadLocal(methodIndexVar);
+		
+		if(isStatic) {
+			invokeEventLogger("invokeStaticMethod" + suffix, "(Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Thread;I)V");
+		} else if(isSpecial) {
+			invokeEventLogger("invokeSpecialMethod" + suffix, "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Thread;I)V");
+		} else {
+			invokeEventLogger("invokeMethod" + suffix, "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Thread;I)V");
+		}
+ 	}
 
 	private void visitMethodReturned(String descriptor) {
 		Type returnType = Type.getReturnType(descriptor);

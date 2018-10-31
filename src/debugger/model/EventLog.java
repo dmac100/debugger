@@ -4,6 +4,7 @@ import static debugger.util.CollectionUtil.getLast;
 import static debugger.util.CollectionUtil.lastIndexOf;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -12,8 +13,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import debugger.event.EventLogger;
 import debugger.event.Events.EnterMethodEvent;
 import debugger.event.Events.Event;
 import debugger.event.Events.ExitWithExceptionEvent;
@@ -25,6 +30,9 @@ import debugger.event.Events.ReturnValueEvent;
 import debugger.event.Events.ReturnedValueEvent;
 import debugger.event.Events.SetLocalNameEvent;
 import debugger.event.Events.StoreEvent;
+import debugger.event.SnapshotCreator;
+import debugger.event.SnapshotEvent;
+import debugger.instrumentation.util.AsmUtil;
 
 public class EventLog {
 	private final List<Event> events;
@@ -165,13 +173,7 @@ public class EventLog {
 		List<Map<Integer, Object>> localsStack = new ArrayList<>();
 		List<Map<Integer, String>> localsNameStack = new ArrayList<>();
 		
-		for(int i = 0; i < currentIndex; i++) {
-			Event event = events.get(i);
-			
-			if(event.thread != currentThread) {
-				continue;
-			}
-			
+		for(Event event:getCurrentEvents()) {
 			if(event instanceof EnterMethodEvent) {
 				localsStack.add(new HashMap<>());
 				localsNameStack.add(new HashMap<>());
@@ -203,7 +205,55 @@ public class EventLog {
 		
 		return localsByName;
 	}
+	
+	public Optional<Object> getObjectSnapshot(Object object, List<Event> events) {
+		Stream<SnapshotCreator> compatibleSnapshotCreators = EventLogger.snapshotCreators.stream().filter(creator -> creator.isCompatibleType(object));
+		return compatibleSnapshotCreators.findFirst().map(snapshotCreator -> {
+			Object snapshotObject = snapshotCreator.createObject();
+			
+			Set<String> forwardedMethods = snapshotCreator.getForwardedMethods();
+			
+			for(Event event:getCurrentEvents()) {
+				if(event instanceof InvokeMethodEvent) {
+					InvokeMethodEvent invokeMethodEvent = (InvokeMethodEvent) event;
+					if(object == invokeMethodEvent.object && snapshotCreator.isCompatibleType(invokeMethodEvent.object)) {
+						if(forwardedMethods.contains(invokeMethodEvent.name + invokeMethodEvent.descriptor)) {
+							try {
+								Method method = AsmUtil.getMethod(snapshotObject.getClass(), invokeMethodEvent.name, invokeMethodEvent.descriptor);
+								method.invoke(snapshotObject, invokeMethodEvent.args);
+							} catch(ReflectiveOperationException e) {
+								throw new RuntimeException("Error invoking method", e);
+							}
+						}
+					}
+				}
+				
+				if(event instanceof SnapshotEvent) {
+					SnapshotEvent snapshotEvent = (SnapshotEvent) event;
+					if(snapshotEvent.matchesObject(object)) {
+						snapshotObject = snapshotEvent.getSnapshotObject();
+					}
+				}
+			}
+			
+			return snapshotObject;
+		});
+	}
 
+	private List<Event> getCurrentEvents() {
+		List<Event> currentEvents = new ArrayList<>();
+	
+		for(int i = 0; i < currentIndex; i++) {
+			Event event = events.get(i);
+			
+			if(event.thread == currentThread) {
+				currentEvents.add(event);
+			}
+		}
+		
+		return currentEvents;
+	}
+	
 	public int getLastIndex(Thread thread) {
 		return lastIndexOf(events, e -> e.thread == thread && e instanceof ReturnValueEvent);
 	}
@@ -222,5 +272,9 @@ public class EventLog {
 	
 	public File getSourceFile() {
 		return sourceFile;
+	}
+	
+	public List<Event> getEvents() {
+		return events;
 	}
 }
